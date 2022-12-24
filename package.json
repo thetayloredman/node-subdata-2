@@ -1,6 +1,6 @@
 {
     "name": "subdata-2",
-    "version": "0.1.0",
+    "version": "0.1.1",
     "type": "module",
     "description": "A wrapper around the SubData 2 data protocol for Node.js",
     "main": "dist/index.js",
