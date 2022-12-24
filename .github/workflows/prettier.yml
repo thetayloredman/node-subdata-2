@@ -1,0 +1,58 @@
+# node-subdata-2 - SubData 2 wrapper for Node.js
+# Copyright (C) 2022  LogN
+#
+# This program is free software: you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation, either version 3 of the License, or
+# (at your option) any later version.
+#
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with this program.  If not, see <https://www.gnu.org/licenses/>.
+
+name: Prettier
+
+on:
+    push:
+        branches:
+            - main
+    pull_request:
+
+jobs:
+    prettier:
+        runs-on: ubuntu-latest
+
+        strategy:
+            matrix:
+                node-version: [18.x]
+
+        steps:
+            - name: Checkout
+              uses: actions/checkout@v3
+              with:
+                  # Make sure the actual branch is checked out when running on pull requests
+                  ref: ${{ github.head_ref }}
+                  repository: ${{github.event.pull_request.head.repo.full_name || github.repository }}
+
+            - name: Use Node.js ${{ matrix.node-version }}
+              uses: actions/setup-node@v3
+              with:
+                  node-version: ${{ matrix.node-version }}
+
+            - name: Install dependencies
+              run: yarn install --immutable
+
+            - name: Run prettier
+              run: yarn run prettier:check
+
+            - name: Run actual reformat if chances can be made
+              run: yarn run prettier
+              if: ${{ failure() }}
+
+            - name: Show diff
+              run: git diff
+              if: ${{ failure() }}
