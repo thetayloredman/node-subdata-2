@@ -16,4 +16,6 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-console.log("stub");
+import ControlCharacters from './controlCharacters.js'
+
+export {ControlCharacters}
