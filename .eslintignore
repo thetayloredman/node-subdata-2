@@ -4,3 +4,4 @@
 *.js
 *.cjs
 !.eslintrc.cjs
+/docs/

@@ -12,12 +12,15 @@
         "prettier": "prettier . -w",
         "prettier:check": "prettier . --check",
         "test": "jest",
-        "prepare": "husky install",
+        "husky": "husky install",
+        "prepare": "yarn run husky && yarn run docs",
         "lint-staged": "lint-staged",
         "lint": "eslint .",
         "test:staged": "npx lint-staged",
         "githook:commit-msg": "yarn run commitlint --edit",
-        "githook:pre-commit": "yarn run test:staged && yarn run build && yarn run test"
+        "githook:pre-commit": "yarn run test:staged && yarn run build && yarn run test",
+        "docs": "typedoc",
+        "np": "np"
     },
     "repository": {
         "type": "git",
@@ -52,7 +55,9 @@
         "husky": "^8.0.2",
         "jest": "^29.3.1",
         "lint-staged": "^13.1.0",
+        "np": "^7.6.2",
         "prettier": "^2.8.1",
+        "typedoc": "^0.23.23",
         "typescript": "^4.9.4"
     },
     "lint-staged": {
