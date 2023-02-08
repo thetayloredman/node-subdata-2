@@ -16,6 +16,8 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-import ControlCharacters from './controlCharacters.js'
+import SafeEventEmitter from "./lib/SafeEventEmitter.js";
+import { ControlCharacters } from "./stream/controlCharacters.js";
+import Stream, { StreamEvents } from "./stream/stream.js";
 
-export {ControlCharacters}
+export { ControlCharacters, SafeEventEmitter, Stream, StreamEvents };

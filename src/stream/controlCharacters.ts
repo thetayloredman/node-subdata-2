@@ -40,4 +40,4 @@ enum ControlCharacters {
     READ_RESET = 0x18
 }
 
-export default ControlCharacters;
+export { ControlCharacters };
