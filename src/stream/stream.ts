@@ -18,13 +18,17 @@
 
 import SafeEventEmitter from "../lib/SafeEventEmitter";
 
-export type StreamEvents = {
+export enum StreamEvents {
+    ReadReset = 'reset'
+}
+
+export type StreamEventArguments = {
     /** Emitted when the stream is reset. */
-    reset: [];
+    [StreamEvents.ReadReset]: [];
 };
 
 /** Represents the SubData stream (layer 1) */
-export default class Stream extends SafeEventEmitter<StreamEvents> {
+export default class Stream extends SafeEventEmitter<StreamEventArguments> {
     /** The buffer of the stream */
     private _buffer: Buffer;
     /** The size of the buffer */
@@ -51,6 +55,6 @@ export default class Stream extends SafeEventEmitter<StreamEvents> {
     private _readReset(): void {
         this._buffer = Buffer.alloc(0);
         this._bufferSize = 0;
-        this.emit("reset");
+        this.emit(StreamEvents.ReadReset);
     }
 }

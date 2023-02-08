@@ -18,6 +18,6 @@
 
 import SafeEventEmitter from "./lib/SafeEventEmitter.js";
 import { ControlCharacters } from "./stream/controlCharacters.js";
-import Stream, { StreamEvents } from "./stream/stream.js";
+import Stream, { StreamEventArguments } from "./stream/stream.js";
 
-export { ControlCharacters, SafeEventEmitter, Stream, StreamEvents };
+export { ControlCharacters, SafeEventEmitter, Stream, StreamEventArguments as StreamEvents };
