@@ -16,9 +16,7 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-import SafeEventEmitter from "./lib/SafeEventEmitter.js";
-import { kb, mb } from "./lib/sizeHelpers.js";
-import { ControlCharacters } from "./stream/controlCharacters.js";
-import Stream, { StreamEventArguments, StreamEvents } from "./stream/index.js";
+import { kb, mb } from "../../lib/sizeHelpers";
 
-export { ControlCharacters, kb, mb, SafeEventEmitter, Stream, StreamEventArguments, StreamEvents };
+test("kb", () => expect(kb(1)).toBe(1024));
+test("mb", () => expect(mb(1)).toBe(1048576));

@@ -16,9 +16,24 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-import SafeEventEmitter from "./lib/SafeEventEmitter.js";
-import { kb, mb } from "./lib/sizeHelpers.js";
-import { ControlCharacters } from "./stream/controlCharacters.js";
-import Stream, { StreamEventArguments, StreamEvents } from "./stream/index.js";
+// A series of helper functions for dealing with sizes (KB, GB, TB, etc.)
 
-export { ControlCharacters, kb, mb, SafeEventEmitter, Stream, StreamEventArguments, StreamEvents };
+/**
+ * Convert a size in kilobytes to bytes.
+ * @param size The size in kilobytes
+ */
+export function kb(size: number): number {
+    return size * 1024;
+}
+
+/**
+ * Convert a size in megabytes to bytes.
+ * @param size The size in megabytes
+ */
+export function mb(size: number): number {
+    return kb(size) * 1024;
+}
+
+// TODO: Read GB (requires BigInt)
+// TODO: Read TB (requires BigInt)
+// TODO: Read PB (requires BigInt)

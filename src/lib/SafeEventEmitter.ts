@@ -22,8 +22,9 @@ import { EventEmitter } from "node:events";
 /* eslint-disable @typescript-eslint/no-explicit-any */
 
 /**
- * Represents a type-safe EventEmitter.
- * @typeParam Events The events that can be emitted.
+ * Represents a type-safe EventEmitter. This is a wrapper around EventEmitter & should be
+ * completely type-compatible with it.
+ * @typeParam Events The types of events that can be emitted
  */
 export default class SafeEventEmitter<Events extends Record<string, any[]>> implements EventEmitter {
     /** The underlying EventEmitter */
