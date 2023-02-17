@@ -40,7 +40,15 @@ export type StreamEventArguments = {
     [StreamEvents.Packet]: [number, Buffer];
 };
 
-/** Represents the SubData stream (layer 1) */
+/**
+ * Represents the {@link https://github.com/ME1312/SubData-2/wiki/Protocol-Format#layer-1-the-stream SubData Stream}.
+ *
+ * This Stream class is a wrapper around a buffer that handles the reading of packets.
+ *
+ * It emits a few events, which can be found in {@link StreamEvents} and {@link StreamEventArguments}.
+ *
+ * You can feed a Stream raw data with its {@link Stream.feed} method.
+ */
 export default class Stream extends SafeEventEmitter<StreamEventArguments> {
     /** The buffer of the stream */
     private _buffer: Buffer;
