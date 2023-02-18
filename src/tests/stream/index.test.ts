@@ -218,12 +218,12 @@ describe("Stream", () => {
         factory("4kb => ReadKB", kb(4), { controlCharacter: ControlCharacters.ReadKB, number: 0, remainder: 0 });
         factory("5kb => ReadKB", kb(5), { controlCharacter: ControlCharacters.ReadKB, number: 0, remainder: kb(1) });
         factory("8kb => ReadKB", kb(8), { controlCharacter: ControlCharacters.ReadKB, number: 1, remainder: 0 });
-        factory("2000kb yields number=255", kb(2000), { controlCharacter: ControlCharacters.ReadKB, number: 255, remainder: kb(2000 - 256) });
+        factory("2000kb yields number=255", kb(2000), { controlCharacter: ControlCharacters.ReadKB, number: 255, remainder: kb(2000) - 4 * kb(256) });
 
         factory("4mb => ReadMB", mb(4), { controlCharacter: ControlCharacters.ReadMB, number: 0, remainder: 0 });
         factory("5mb => ReadMB", mb(5), { controlCharacter: ControlCharacters.ReadMB, number: 0, remainder: mb(1) });
         factory("8mb => ReadMB", mb(8), { controlCharacter: ControlCharacters.ReadMB, number: 1, remainder: 0 });
-        factory("2000mb yields number=255", mb(2000), { controlCharacter: ControlCharacters.ReadMB, number: 255, remainder: mb(2000 - 256) });
+        factory("2000mb yields number=255", mb(2000), { controlCharacter: ControlCharacters.ReadMB, number: 255, remainder: mb(2000) - 4 * mb(256) });
     });
 
     describe("encode", () => {

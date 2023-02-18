@@ -17,7 +17,7 @@
  */
 
 import SafeEventEmitter from "../lib/SafeEventEmitter";
-import { kb, mb } from "../lib/sizeHelpers";
+import { bytes, kb, mb } from "../lib/sizeHelpers";
 import { type SizedControlCharacters, ControlCharacters } from "./controlCharacters";
 
 export enum StreamEvents {
@@ -214,6 +214,25 @@ export default class Stream extends SafeEventEmitter<StreamEventArguments> {
     }
 
     /**
+     * Do some funny math to calculate the return value for {@link Stream._bestControlCharacter}.
+     *
+     * @param controlCharacter The control character being suggested
+     * @param size The size in bytes
+     * @param sizeFn The size function to use (probably one of {@link kb}, {@link mb}, or {@link bytes})
+     */
+    private _calculateControlCharacterRemainder(
+        controlCharacter: SizedControlCharacters,
+        size: number,
+        sizeFn: (s: number) => number
+    ): { controlCharacter: SizedControlCharacters; number: number; remainder: number } {
+        return {
+            controlCharacter,
+            number: Math.min(255, Math.floor(size / sizeFn(4)) - 1),
+            remainder: size - sizeFn(4) * (Math.min(255, Math.floor(size / sizeFn(4)) - 1) + 1)
+        };
+    }
+
+    /**
      * Determine the best suitable control character for a given size, along with the remainder after
      * using that control character.
      * @param size The size in bytes
@@ -222,29 +241,13 @@ export default class Stream extends SafeEventEmitter<StreamEventArguments> {
         size: number
     ):
         | { controlCharacter: ControlCharacters.ReadByte; number: -1; remainder: number }
-        | { controlCharacter: Exclude<SizedControlCharacters, ControlCharacters.ReadByte>; number: number; remainder: number }
+        | { controlCharacter: SizedControlCharacters; number: number; remainder: number }
         | false {
         if (size < 1) return false;
         if (size < 4) return { controlCharacter: ControlCharacters.ReadByte, number: -1, remainder: size - 1 };
-        if (size < kb(4))
-            return {
-                controlCharacter: ControlCharacters.ReadBytes,
-                number: Math.min(255, Math.floor(size / 4) - 1),
-                // In the case that we have a larger value than can fit in one read, we simply
-                // just return the max value a read can take and the remainder from that
-                remainder: Math.floor(size / 4) - 1 > 255 ? size - 4 * 256 : size % 4
-            };
-        if (size < mb(4))
-            return {
-                controlCharacter: ControlCharacters.ReadKB,
-                number: Math.min(255, Math.floor(size / kb(4)) - 1),
-                remainder: Math.floor(size / kb(4)) - 1 > 255 ? size - kb(256) : size % kb(4)
-            };
-        return {
-            controlCharacter: ControlCharacters.ReadMB,
-            number: Math.min(255, Math.floor(size / mb(4)) - 1),
-            remainder: Math.floor(size / mb(4)) - 1 > 255 ? size - mb(256) : size % mb(4)
-        };
+        if (size < kb(4)) return this._calculateControlCharacterRemainder(ControlCharacters.ReadBytes, size, bytes);
+        if (size < mb(4)) return this._calculateControlCharacterRemainder(ControlCharacters.ReadKB, size, kb);
+        return this._calculateControlCharacterRemainder(ControlCharacters.ReadMB, size, mb);
     }
 
     /**
