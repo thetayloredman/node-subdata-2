@@ -20,6 +20,21 @@ import { kb, mb } from "../../lib/sizeHelpers";
 import Stream, { StreamEvents } from "../../stream/";
 import { ControlCharacters } from "../../stream/controlCharacters";
 
+/** Makes a new {@link Stream} and attaches listeners. */
+function makeNewStream(): { stream: Stream; onRead: jest.Mock; onPacket: jest.Mock; onReset: jest.Mock } {
+    const stream = new Stream();
+
+    const onRead = jest.fn(() => undefined);
+    const onPacket = jest.fn(() => undefined);
+    const onReset = jest.fn(() => undefined);
+
+    stream.on(StreamEvents.Read, onRead);
+    stream.on(StreamEvents.Packet, onPacket);
+    stream.on(StreamEvents.ReadReset, onReset);
+
+    return { stream, onRead, onPacket, onReset };
+}
+
 describe("Stream", () => {
     it("errors when provided jumbled data", () => {
         const stream = new Stream();
@@ -30,13 +45,7 @@ describe("Stream", () => {
     });
 
     it("does nothing for KeepAlive", () => {
-        const stream = new Stream();
-        const onRead = jest.fn(() => undefined);
-        const onPacket = jest.fn(() => undefined);
-        const onReset = jest.fn(() => undefined);
-        stream.on(StreamEvents.Read, onRead);
-        stream.on(StreamEvents.Packet, onPacket);
-        stream.on(StreamEvents.ReadReset, onReset);
+        const { stream, onRead, onPacket, onReset } = makeNewStream();
 
         stream.feed(Buffer.from([ControlCharacters.KeepAlive]));
 
@@ -46,13 +55,7 @@ describe("Stream", () => {
     });
 
     it("single reset", () => {
-        const stream = new Stream();
-        const onRead = jest.fn(() => undefined);
-        const onPacket = jest.fn(() => undefined);
-        const onReset = jest.fn(() => undefined);
-        stream.on(StreamEvents.Read, onRead);
-        stream.on(StreamEvents.Packet, onPacket);
-        stream.on(StreamEvents.ReadReset, onReset);
+        const { stream, onRead, onPacket, onReset } = makeNewStream();
 
         stream.feed(Buffer.from([ControlCharacters.ReadReset]));
 
@@ -63,13 +66,7 @@ describe("Stream", () => {
     });
 
     it("multiple resets", () => {
-        const stream = new Stream();
-        const onRead = jest.fn(() => undefined);
-        const onPacket = jest.fn(() => undefined);
-        const onReset = jest.fn(() => undefined);
-        stream.on(StreamEvents.Read, onRead);
-        stream.on(StreamEvents.Packet, onPacket);
-        stream.on(StreamEvents.ReadReset, onReset);
+        const { stream, onRead, onPacket, onReset } = makeNewStream();
 
         stream.feed(Buffer.from([ControlCharacters.ReadReset, ControlCharacters.ReadReset]));
 
@@ -81,13 +78,7 @@ describe("Stream", () => {
     });
 
     it("empty packet", () => {
-        const stream = new Stream();
-        const onRead = jest.fn(() => undefined);
-        const onPacket = jest.fn(() => undefined);
-        const onReset = jest.fn(() => undefined);
-        stream.on(StreamEvents.Read, onRead);
-        stream.on(StreamEvents.Packet, onPacket);
-        stream.on(StreamEvents.ReadReset, onReset);
+        const { stream, onRead, onPacket, onReset } = makeNewStream();
 
         stream.feed(Buffer.from([ControlCharacters.EndOfPacket]));
 
@@ -98,13 +89,7 @@ describe("Stream", () => {
     });
 
     it("single byte packet", () => {
-        const stream = new Stream();
-        const onRead = jest.fn(() => undefined);
-        const onPacket = jest.fn(() => undefined);
-        const onReset = jest.fn(() => undefined);
-        stream.on(StreamEvents.Read, onRead);
-        stream.on(StreamEvents.Packet, onPacket);
-        stream.on(StreamEvents.ReadReset, onReset);
+        const { stream, onRead, onPacket, onReset } = makeNewStream();
 
         stream.feed(Buffer.from([ControlCharacters.ReadByte, 0x01, ControlCharacters.EndOfPacket]));
 
@@ -116,13 +101,7 @@ describe("Stream", () => {
     });
 
     it("waits when read is incomplete", () => {
-        const stream = new Stream();
-        const onRead = jest.fn(() => undefined);
-        const onPacket = jest.fn(() => undefined);
-        const onReset = jest.fn(() => undefined);
-        stream.on(StreamEvents.Read, onRead);
-        stream.on(StreamEvents.Packet, onPacket);
-        stream.on(StreamEvents.ReadReset, onReset);
+        const { stream, onRead, onPacket, onReset } = makeNewStream();
 
         stream.feed(Buffer.from([ControlCharacters.ReadByte]));
 
@@ -139,13 +118,7 @@ describe("Stream", () => {
     });
 
     it("longer read", () => {
-        const stream = new Stream();
-        const onRead = jest.fn(() => undefined);
-        const onPacket = jest.fn(() => undefined);
-        const onReset = jest.fn(() => undefined);
-        stream.on(StreamEvents.Read, onRead);
-        stream.on(StreamEvents.Packet, onPacket);
-        stream.on(StreamEvents.ReadReset, onReset);
+        const { stream, onRead, onPacket, onReset } = makeNewStream();
 
         stream.feed(
             Buffer.from([
@@ -179,13 +152,7 @@ describe("Stream", () => {
     });
 
     it("long read with missing size", () => {
-        const stream = new Stream();
-        const onRead = jest.fn(() => undefined);
-        const onPacket = jest.fn(() => undefined);
-        const onReset = jest.fn(() => undefined);
-        stream.on(StreamEvents.Read, onRead);
-        stream.on(StreamEvents.Packet, onPacket);
-        stream.on(StreamEvents.ReadReset, onReset);
+        const { stream, onRead, onPacket, onReset } = makeNewStream();
 
         stream.feed(Buffer.from([ControlCharacters.ReadBytes]));
 
@@ -207,13 +174,7 @@ describe("Stream", () => {
     });
 
     it("long read interrupted in the middle", () => {
-        const stream = new Stream();
-        const onRead = jest.fn(() => undefined);
-        const onPacket = jest.fn(() => undefined);
-        const onReset = jest.fn(() => undefined);
-        stream.on(StreamEvents.Read, onRead);
-        stream.on(StreamEvents.Packet, onPacket);
-        stream.on(StreamEvents.ReadReset, onReset);
+        const { stream, onRead, onPacket, onReset } = makeNewStream();
 
         stream.feed(Buffer.from([ControlCharacters.ReadBytes, 0x02, 0x00, 0x01, 0x02, 0x03, 0x04]));
 
@@ -235,13 +196,7 @@ describe("Stream", () => {
     });
 
     it("Read Reset after a read will actually reset", () => {
-        const stream = new Stream();
-        const onRead = jest.fn(() => undefined);
-        const onPacket = jest.fn(() => undefined);
-        const onReset = jest.fn(() => undefined);
-        stream.on(StreamEvents.Read, onRead);
-        stream.on(StreamEvents.Packet, onPacket);
-        stream.on(StreamEvents.ReadReset, onReset);
+        const { stream, onRead, onPacket, onReset } = makeNewStream();
 
         stream.feed(Buffer.from([ControlCharacters.ReadByte, 0x00, ControlCharacters.ReadReset, ControlCharacters.EndOfPacket]));
 
