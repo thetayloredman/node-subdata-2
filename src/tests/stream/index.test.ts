@@ -21,49 +21,41 @@ import Stream, { StreamEvents } from "../../stream/";
 import { ControlCharacters } from "../../stream/controlCharacters";
 
 describe("Stream", () => {
-    const stream = new Stream();
-
-    const onRead = jest.fn(() => undefined);
-    const onPacket = jest.fn(() => undefined);
-    const onReset = jest.fn(() => undefined);
-
-    stream.on(StreamEvents.Read, onRead);
-    stream.on(StreamEvents.Packet, onPacket);
-    stream.on(StreamEvents.ReadReset, onReset);
-
-    beforeEach(() => {
-        // Some tests will screw up the buffer by adding invalid data, and this is
-        // the only way for us to recover.
-
-        // @ts-expect-error: required reset to a private property
-        stream._buffer = Buffer.alloc(0);
-        // @ts-expect-error: required reset to a private property
-        stream._bufferSize = 0;
-        // @ts-expect-error: required reset to a private property
-        stream._packet = Buffer.alloc(0);
-        // @ts-expect-error: required reset to a private property
-        stream._packetSize = 0;
-
-        onRead.mockClear();
-        onPacket.mockClear();
-        onReset.mockClear();
-    });
-
     it("errors when provided jumbled data", () => {
+        const stream = new Stream();
+
         expect(() => stream.feed(Buffer.from([0xff]))).toThrow(
             "I don't know what I am looking at! Encountered unknown control character 0xff in stream."
         );
     });
 
     it("does nothing for KeepAlive", () => {
+        const stream = new Stream();
+        const onRead = jest.fn(() => undefined);
+        const onPacket = jest.fn(() => undefined);
+        const onReset = jest.fn(() => undefined);
+        stream.on(StreamEvents.Read, onRead);
+        stream.on(StreamEvents.Packet, onPacket);
+        stream.on(StreamEvents.ReadReset, onReset);
+
         stream.feed(Buffer.from([ControlCharacters.KeepAlive]));
+
         expect(onRead).not.toHaveBeenCalled();
         expect(onPacket).not.toHaveBeenCalled();
         expect(onReset).not.toHaveBeenCalled();
     });
 
     it("single reset", () => {
+        const stream = new Stream();
+        const onRead = jest.fn(() => undefined);
+        const onPacket = jest.fn(() => undefined);
+        const onReset = jest.fn(() => undefined);
+        stream.on(StreamEvents.Read, onRead);
+        stream.on(StreamEvents.Packet, onPacket);
+        stream.on(StreamEvents.ReadReset, onReset);
+
         stream.feed(Buffer.from([ControlCharacters.ReadReset]));
+
         expect(onRead).not.toHaveBeenCalled();
         expect(onPacket).not.toHaveBeenCalled();
         expect(onReset).toHaveBeenCalledTimes(1);
@@ -71,7 +63,16 @@ describe("Stream", () => {
     });
 
     it("multiple resets", () => {
+        const stream = new Stream();
+        const onRead = jest.fn(() => undefined);
+        const onPacket = jest.fn(() => undefined);
+        const onReset = jest.fn(() => undefined);
+        stream.on(StreamEvents.Read, onRead);
+        stream.on(StreamEvents.Packet, onPacket);
+        stream.on(StreamEvents.ReadReset, onReset);
+
         stream.feed(Buffer.from([ControlCharacters.ReadReset, ControlCharacters.ReadReset]));
+
         expect(onRead).not.toHaveBeenCalled();
         expect(onPacket).not.toHaveBeenCalled();
         expect(onReset).toHaveBeenCalledTimes(2);
@@ -80,7 +81,16 @@ describe("Stream", () => {
     });
 
     it("empty packet", () => {
+        const stream = new Stream();
+        const onRead = jest.fn(() => undefined);
+        const onPacket = jest.fn(() => undefined);
+        const onReset = jest.fn(() => undefined);
+        stream.on(StreamEvents.Read, onRead);
+        stream.on(StreamEvents.Packet, onPacket);
+        stream.on(StreamEvents.ReadReset, onReset);
+
         stream.feed(Buffer.from([ControlCharacters.EndOfPacket]));
+
         expect(onRead).not.toHaveBeenCalled();
         expect(onPacket).toHaveBeenCalledTimes(1);
         expect(onPacket).toHaveBeenCalledWith(0, Buffer.alloc(0));
@@ -88,7 +98,16 @@ describe("Stream", () => {
     });
 
     it("single byte packet", () => {
+        const stream = new Stream();
+        const onRead = jest.fn(() => undefined);
+        const onPacket = jest.fn(() => undefined);
+        const onReset = jest.fn(() => undefined);
+        stream.on(StreamEvents.Read, onRead);
+        stream.on(StreamEvents.Packet, onPacket);
+        stream.on(StreamEvents.ReadReset, onReset);
+
         stream.feed(Buffer.from([ControlCharacters.ReadByte, 0x01, ControlCharacters.EndOfPacket]));
+
         expect(onRead).toHaveBeenCalledTimes(1);
         expect(onRead).toHaveBeenCalledWith(ControlCharacters.ReadByte, 1, 1);
         expect(onPacket).toHaveBeenCalledTimes(1);
@@ -97,11 +116,22 @@ describe("Stream", () => {
     });
 
     it("waits when read is incomplete", () => {
+        const stream = new Stream();
+        const onRead = jest.fn(() => undefined);
+        const onPacket = jest.fn(() => undefined);
+        const onReset = jest.fn(() => undefined);
+        stream.on(StreamEvents.Read, onRead);
+        stream.on(StreamEvents.Packet, onPacket);
+        stream.on(StreamEvents.ReadReset, onReset);
+
         stream.feed(Buffer.from([ControlCharacters.ReadByte]));
+
         expect(onRead).not.toHaveBeenCalled();
         expect(onPacket).not.toHaveBeenCalled();
         expect(onReset).not.toHaveBeenCalled();
+
         stream.feed(Buffer.from([0x01]));
+
         expect(onRead).toHaveBeenCalledTimes(1);
         expect(onRead).toHaveBeenCalledWith(ControlCharacters.ReadByte, 1, 1);
         expect(onPacket).not.toHaveBeenCalled();
@@ -109,6 +139,14 @@ describe("Stream", () => {
     });
 
     it("longer read", () => {
+        const stream = new Stream();
+        const onRead = jest.fn(() => undefined);
+        const onPacket = jest.fn(() => undefined);
+        const onReset = jest.fn(() => undefined);
+        stream.on(StreamEvents.Read, onRead);
+        stream.on(StreamEvents.Packet, onPacket);
+        stream.on(StreamEvents.ReadReset, onReset);
+
         stream.feed(
             Buffer.from([
                 ControlCharacters.ReadBytes,
@@ -128,6 +166,7 @@ describe("Stream", () => {
                 ControlCharacters.EndOfPacket
             ])
         );
+
         expect(onRead).toHaveBeenCalledTimes(1);
         expect(onRead).toHaveBeenCalledWith(
             ControlCharacters.ReadBytes,
@@ -140,11 +179,22 @@ describe("Stream", () => {
     });
 
     it("long read with missing size", () => {
+        const stream = new Stream();
+        const onRead = jest.fn(() => undefined);
+        const onPacket = jest.fn(() => undefined);
+        const onReset = jest.fn(() => undefined);
+        stream.on(StreamEvents.Read, onRead);
+        stream.on(StreamEvents.Packet, onPacket);
+        stream.on(StreamEvents.ReadReset, onReset);
+
         stream.feed(Buffer.from([ControlCharacters.ReadBytes]));
+
         expect(onRead).not.toHaveBeenCalled();
         expect(onPacket).not.toHaveBeenCalled();
         expect(onReset).not.toHaveBeenCalled();
+
         stream.feed(Buffer.from([0x2, 0x0, 0x1, 0x2, 0x3, 0x4, 0x5, 0x6, 0x7, 0x8, 0x9, 0xa, 0xb, ControlCharacters.EndOfPacket]));
+
         expect(onRead).toHaveBeenCalledTimes(1);
         expect(onRead).toHaveBeenCalledWith(
             ControlCharacters.ReadBytes,
@@ -157,11 +207,22 @@ describe("Stream", () => {
     });
 
     it("long read interrupted in the middle", () => {
+        const stream = new Stream();
+        const onRead = jest.fn(() => undefined);
+        const onPacket = jest.fn(() => undefined);
+        const onReset = jest.fn(() => undefined);
+        stream.on(StreamEvents.Read, onRead);
+        stream.on(StreamEvents.Packet, onPacket);
+        stream.on(StreamEvents.ReadReset, onReset);
+
         stream.feed(Buffer.from([ControlCharacters.ReadBytes, 0x02, 0x00, 0x01, 0x02, 0x03, 0x04]));
+
         expect(onRead).not.toHaveBeenCalled();
         expect(onPacket).not.toHaveBeenCalled();
         expect(onReset).not.toHaveBeenCalled();
+
         stream.feed(Buffer.from([0x05, 0x06, 0x07, 0x08, 0x09, 0x0a, 0x0b, ControlCharacters.EndOfPacket]));
+
         expect(onRead).toHaveBeenCalledTimes(1);
         expect(onRead).toHaveBeenCalledWith(
             ControlCharacters.ReadBytes,
@@ -174,7 +235,16 @@ describe("Stream", () => {
     });
 
     it("Read Reset after a read will actually reset", () => {
+        const stream = new Stream();
+        const onRead = jest.fn(() => undefined);
+        const onPacket = jest.fn(() => undefined);
+        const onReset = jest.fn(() => undefined);
+        stream.on(StreamEvents.Read, onRead);
+        stream.on(StreamEvents.Packet, onPacket);
+        stream.on(StreamEvents.ReadReset, onReset);
+
         stream.feed(Buffer.from([ControlCharacters.ReadByte, 0x00, ControlCharacters.ReadReset, ControlCharacters.EndOfPacket]));
+
         expect(onRead).toHaveBeenCalledTimes(1);
         expect(onRead).toHaveBeenCalledWith(ControlCharacters.ReadByte, 1, 0);
         expect(onPacket).toHaveBeenCalledTimes(1);
@@ -185,12 +255,16 @@ describe("Stream", () => {
 
     describe("_bestControlCharacter", () => {
         it("nothing => returns false", () => {
+            const stream = new Stream();
+
             // @ts-expect-error: testing a private method
             expect(stream._bestControlCharacter(0)).toBe(false);
         });
 
         function factory(name: string, size: number, result: ReturnType<Stream["_bestControlCharacter"]>): void {
             it(name, () => {
+                const stream = new Stream();
+
                 // @ts-expect-error: testing a private method
                 expect(stream._bestControlCharacter(size)).toEqual(result);
             });
@@ -229,6 +303,8 @@ describe("Stream", () => {
     describe("encode", () => {
         function factory(name: string, input: Buffer, output: Buffer): void {
             it(name, () => {
+                const stream = new Stream();
+
                 expect(stream.encode(input)).toEqual(output);
             });
         }
