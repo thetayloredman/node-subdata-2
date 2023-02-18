@@ -19,6 +19,14 @@
 // A series of helper functions for dealing with sizes (KB, GB, TB, etc.)
 
 /**
+ * Does literally nothing with the passed value.
+ * @param size The size in bytes
+ */
+export function bytes(size: number): number {
+    return size;
+}
+
+/**
  * Convert a size in kilobytes to bytes.
  * @param size The size in kilobytes
  */

@@ -17,8 +17,8 @@
  */
 
 import SafeEventEmitter from "../lib/SafeEventEmitter";
-import { kb, mb } from "../lib/sizeHelpers";
-import { ControlCharacters } from "./controlCharacters";
+import { bytes, kb, mb } from "../lib/sizeHelpers";
+import { type SizedControlCharacters, ControlCharacters } from "./controlCharacters";
 
 export enum StreamEvents {
     ReadReset = "reset",
@@ -182,7 +182,6 @@ export default class Stream extends SafeEventEmitter<StreamEventArguments> {
         { controlCharacter, bytes, numberOfType }: { controlCharacter: ControlCharacters; bytes: number; numberOfType: number },
         data: Buffer | number
     ): void {
-        // FIXME: The toString here is probably dumb
         this._packet = Buffer.concat([this._packet, data instanceof Buffer ? data : Buffer.from([data])]);
         this._packetSize += bytes;
         /* istanbul ignore if: this should never reasonably happen & is untestable without a LOT of work */
@@ -212,5 +211,88 @@ export default class Stream extends SafeEventEmitter<StreamEventArguments> {
     private _shiftBuffer(count = 0): void {
         this._buffer = this._buffer.subarray(count);
         this._bufferSize -= count;
+    }
+
+    /**
+     * Do some funny math to calculate the return value for {@link Stream._bestControlCharacter}.
+     *
+     * @param controlCharacter The control character being suggested
+     * @param size The size in bytes
+     * @param sizeFn The size function to use (probably one of {@link kb}, {@link mb}, or {@link bytes})
+     */
+    private _calculateControlCharacterRemainder(
+        controlCharacter: SizedControlCharacters,
+        size: number,
+        sizeFn: (s: number) => number
+    ): { controlCharacter: SizedControlCharacters; number: number; remainder: number } {
+        return {
+            controlCharacter,
+            number: Math.min(255, Math.floor(size / sizeFn(4)) - 1),
+            remainder: size - sizeFn(4) * (Math.min(255, Math.floor(size / sizeFn(4)) - 1) + 1)
+        };
+    }
+
+    /**
+     * Determine the best suitable control character for a given size, along with the remainder after
+     * using that control character.
+     * @param size The size in bytes
+     */
+    private _bestControlCharacter(
+        size: number
+    ):
+        | { controlCharacter: ControlCharacters.ReadByte; number: -1; remainder: number }
+        | { controlCharacter: SizedControlCharacters; number: number; remainder: number }
+        | false {
+        if (size < 1) return false;
+        if (size < 4) return { controlCharacter: ControlCharacters.ReadByte, number: -1, remainder: size - 1 };
+        if (size < kb(4)) return this._calculateControlCharacterRemainder(ControlCharacters.ReadBytes, size, bytes);
+        if (size < mb(4)) return this._calculateControlCharacterRemainder(ControlCharacters.ReadKB, size, kb);
+        return this._calculateControlCharacterRemainder(ControlCharacters.ReadMB, size, mb);
+    }
+
+    /**
+     * Encode a Buffer into Layer 1 stream data.
+     * @param data The data to encode
+     */
+    public encode(input: Buffer): Buffer {
+        const size = input.length;
+        let remaining = size;
+        // TODO: Change this when GB/TB/PB support is added.
+
+        // The algorithm here is as follows:
+        // We repeatedly call to _bestControlCharacter and start populating an array with
+        // the results of each along with the data it contains, then we flatten the array
+        // and convert it to a Buffer.
+        const results = [];
+        while (remaining > 0) {
+            const data = this._bestControlCharacter(remaining);
+            /* istanbul ignore next: this should never happen */
+            if (data === false) throw new Error("This should never happen");
+            const { controlCharacter, number, remainder } = data;
+            if (controlCharacter === ControlCharacters.ReadByte) {
+                results.push([controlCharacter, input.subarray(size - remaining, size - remaining + 1)]);
+                remaining -= 1;
+            } else if ([ControlCharacters.ReadBytes, ControlCharacters.ReadKB, ControlCharacters.ReadMB].includes(controlCharacter)) {
+                let byteSize;
+                switch (controlCharacter) {
+                    case ControlCharacters.ReadBytes:
+                        byteSize = (number + 1) * 4;
+                        break;
+                    case ControlCharacters.ReadKB:
+                        byteSize = kb(number + 1) * 4;
+                        break;
+                    case ControlCharacters.ReadMB:
+                        byteSize = mb(number + 1) * 4;
+                        break;
+                    /* istanbul ignore next: this should never happen */
+                    default:
+                        throw new Error("This should never happen");
+                }
+
+                results.push([controlCharacter, number, input.subarray(size - remaining, size - remaining + byteSize)]);
+                remaining -= byteSize;
+            } else throw new Error(`Unrecognized control character returned by _bestControlCharacter for size ${remainder}`);
+        }
+        return Buffer.from(results.flat().flatMap((x) => (x instanceof Buffer ? Array.from(x.values()) : x)));
     }
 }
