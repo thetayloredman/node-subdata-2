@@ -270,14 +270,21 @@ export default class Stream extends SafeEventEmitter<StreamEventArguments> {
                 results.push([controlCharacter, input.subarray(size - remaining, size - remaining + 1)]);
                 remaining -= 1;
             } else if ([ControlCharacters.ReadBytes, ControlCharacters.ReadKB, ControlCharacters.ReadMB].includes(controlCharacter)) {
-                const byteSize =
-                    controlCharacter === ControlCharacters.ReadBytes
-                        ? (number + 1) * 4
-                        : controlCharacter === ControlCharacters.ReadKB
-                        ? kb(number + 1) * 4
-                        : controlCharacter === ControlCharacters.ReadMB
-                        ? mb(number + 1) * 4
-                        : /* istanbul ignore next: this should never happen */ 0;
+                let byteSize;
+                switch (controlCharacter) {
+                    case ControlCharacters.ReadBytes:
+                        byteSize = (number + 1) * 4;
+                        break;
+                    case ControlCharacters.ReadKB:
+                        byteSize = kb(number + 1) * 4;
+                        break;
+                    case ControlCharacters.ReadMB:
+                        byteSize = mb(number + 1) * 4;
+                        break;
+                    /* istanbul ignore next: this should never happen */
+                    default:
+                        throw new Error("This should never happen");
+                }
 
                 results.push([controlCharacter, number, input.subarray(size - remaining, size - remaining + byteSize)]);
                 remaining -= byteSize;
