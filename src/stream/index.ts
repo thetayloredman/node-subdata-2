@@ -291,8 +291,7 @@ export default class Stream extends SafeEventEmitter<StreamEventArguments> {
 
                 results.push([controlCharacter, number, input.subarray(size - remaining, size - remaining + byteSize)]);
                 remaining -= byteSize;
-            } /* istanbul ignore next: this should never happen */ else
-                throw new Error(`Unrecognized control character returned by _bestControlCharacter for size ${remainder}`);
+            } else throw new Error(`Unrecognized control character returned by _bestControlCharacter for size ${remainder}`);
         }
         return Buffer.from(results.flat().flatMap((x) => (x instanceof Buffer ? Array.from(x.values()) : x)));
     }
