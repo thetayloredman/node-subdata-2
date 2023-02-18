@@ -284,6 +284,6 @@ export default class Stream extends SafeEventEmitter<StreamEventArguments> {
             } /* istanbul ignore next: this should never happen */ else
                 throw new Error(`Unrecognized control character returned by _bestControlCharacter for size ${remainder}`);
         }
-        return Buffer.from(results.flat().flatMap((x) => (x instanceof Buffer ? Array.from(x.entries()).map(([_, v]) => v) : x)));
+        return Buffer.from(results.flat().flatMap((x) => (x instanceof Buffer ? Array.from(x.values()) : x)));
     }
 }
