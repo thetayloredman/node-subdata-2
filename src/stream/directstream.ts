@@ -20,24 +20,24 @@ import SafeEventEmitter from "../lib/SafeEventEmitter";
 import { bytes, kb, mb } from "../lib/sizeHelpers";
 import { type SizedControlCharacters, ControlCharacters } from "./controlCharacters";
 
-export enum StreamEvents {
+export enum DirectStreamEvents {
     ReadReset = "reset",
     Read = "read",
     Packet = "packet"
 }
 
-export type StreamEventArguments = {
+export type DirectStreamEventArguments = {
     /** Emitted when the stream is reset */
-    [StreamEvents.ReadReset]: [];
+    [DirectStreamEvents.ReadReset]: [];
     /**
      * Emitted when the stream reads data.
      * This event may fire before the end of a packet.
      * Fires with three arguments, the size read in ControlCharacters, the number of that size read, and the data read.
      * ReadByte will return Number, the rest will return Buffer.
      */
-    [StreamEvents.Read]: [ControlCharacters.ReadByte, 1, number] | [Exclude<ControlCharacters, ControlCharacters.ReadByte>, number, Buffer];
+    [DirectStreamEvents.Read]: [ControlCharacters.ReadByte, 1, number] | [Exclude<ControlCharacters, ControlCharacters.ReadByte>, number, Buffer];
     /** Emitted when an End of Packet is received along with (size, data) parameters. */
-    [StreamEvents.Packet]: [number, Buffer];
+    [DirectStreamEvents.Packet]: [number, Buffer];
 };
 
 /**
@@ -45,11 +45,14 @@ export type StreamEventArguments = {
  *
  * This Stream class is a wrapper around a buffer that handles the reading of packets.
  *
- * It emits a few events, which can be found in {@link StreamEvents} and {@link StreamEventArguments}.
+ * It emits a few events, which can be found in {@link DirectStreamEvents} and {@link DirectStreamEventArguments}.
  *
- * You can feed a Stream raw data with its {@link Stream.feed} method.
+ * You can feed a Stream raw data with its {@link DirectStream.feed} method.
+ *
+ * This stream does not connect with an actual socket, it is just a wrapper around a buffer. You probably
+ * want to use {@link Stream} for this purpose.
  */
-export default class Stream extends SafeEventEmitter<StreamEventArguments> {
+export default class DirectStream extends SafeEventEmitter<DirectStreamEventArguments> {
     /** The buffer of the stream */
     private _buffer: Buffer;
     /** The size of the buffer */
@@ -85,11 +88,11 @@ export default class Stream extends SafeEventEmitter<StreamEventArguments> {
         this._bufferSize = 0;
         this._packet = Buffer.alloc(0);
         this._packetSize = 0;
-        this.emit(StreamEvents.ReadReset);
+        this.emit(DirectStreamEvents.ReadReset);
     }
 
     /**
-     * Command the stream to attempt to process new data. Called internally after {@link Stream.feed} is called.
+     * Command the stream to attempt to process new data. Called internally after {@link DirectStream.feed} is called.
      */
     private _handleNewData(): void {
         if (this._bufferSize === 0) return;
@@ -163,7 +166,7 @@ export default class Stream extends SafeEventEmitter<StreamEventArguments> {
     }
 
     /**
-     * Called internally to add to the packet buffer and emit the {@link StreamEvents.Read} event.
+     * Called internally to add to the packet buffer and emit the {@link DirectStreamEvents.Read} event.
      *
      * The object in the first parameter accepts:
      * - controlCharacter: The control character that was read
@@ -192,14 +195,14 @@ export default class Stream extends SafeEventEmitter<StreamEventArguments> {
         }
         if (controlCharacter === ControlCharacters.ReadByte) {
             // TODO: Remove this cast. Probably need to use some sorta weird discrimination over the types.
-            this.emit(StreamEvents.Read, ControlCharacters.ReadByte, 1, data as number);
+            this.emit(DirectStreamEvents.Read, ControlCharacters.ReadByte, 1, data as number);
             return;
-        } else this.emit(StreamEvents.Read, controlCharacter, numberOfType, data as Buffer);
+        } else this.emit(DirectStreamEvents.Read, controlCharacter, numberOfType, data as Buffer);
     }
 
     /** Called internally to clear and emit a packet. */
     private _emitPacket(): void {
-        this.emit(StreamEvents.Packet, this._packetSize, this._packet);
+        this.emit(DirectStreamEvents.Packet, this._packetSize, this._packet);
         this._packet = Buffer.alloc(0);
         this._packetSize = 0;
     }
@@ -214,7 +217,7 @@ export default class Stream extends SafeEventEmitter<StreamEventArguments> {
     }
 
     /**
-     * Do some funny math to calculate the return value for {@link Stream._bestControlCharacter}.
+     * Do some funny math to calculate the return value for {@link DirectStream._bestControlCharacter}.
      *
      * @param controlCharacter The control character being suggested
      * @param size The size in bytes

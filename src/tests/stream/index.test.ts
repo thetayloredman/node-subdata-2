@@ -17,27 +17,27 @@
  */
 
 import { kb, mb } from "../../lib/sizeHelpers";
-import Stream, { StreamEvents } from "../../stream/";
 import { ControlCharacters } from "../../stream/controlCharacters";
+import DirectStream, { DirectStreamEvents } from "../../stream/directstream";
 
-/** Makes a new {@link Stream} and attaches listeners. */
-function makeNewStream(): { stream: Stream; onRead: jest.Mock; onPacket: jest.Mock; onReset: jest.Mock } {
-    const stream = new Stream();
+/** Makes a new {@link DirectStream} and attaches listeners. */
+function makeNewStream(): { stream: DirectStream; onRead: jest.Mock; onPacket: jest.Mock; onReset: jest.Mock } {
+    const stream = new DirectStream();
 
     const onRead = jest.fn(() => undefined);
     const onPacket = jest.fn(() => undefined);
     const onReset = jest.fn(() => undefined);
 
-    stream.on(StreamEvents.Read, onRead);
-    stream.on(StreamEvents.Packet, onPacket);
-    stream.on(StreamEvents.ReadReset, onReset);
+    stream.on(DirectStreamEvents.Read, onRead);
+    stream.on(DirectStreamEvents.Packet, onPacket);
+    stream.on(DirectStreamEvents.ReadReset, onReset);
 
     return { stream, onRead, onPacket, onReset };
 }
 
 describe("Stream", () => {
     it("errors when provided jumbled data", () => {
-        const stream = new Stream();
+        const stream = new DirectStream();
 
         expect(() => stream.feed(Buffer.from([0xff]))).toThrow(
             "I don't know what I am looking at! Encountered unknown control character 0xff in stream."
@@ -210,15 +210,15 @@ describe("Stream", () => {
 
     describe("_bestControlCharacter", () => {
         it("nothing => returns false", () => {
-            const stream = new Stream();
+            const stream = new DirectStream();
 
             // @ts-expect-error: testing a private method
             expect(stream._bestControlCharacter(0)).toBe(false);
         });
 
-        function factory(name: string, size: number, result: ReturnType<Stream["_bestControlCharacter"]>): void {
+        function factory(name: string, size: number, result: ReturnType<DirectStream["_bestControlCharacter"]>): void {
             it(name, () => {
-                const stream = new Stream();
+                const stream = new DirectStream();
 
                 // @ts-expect-error: testing a private method
                 expect(stream._bestControlCharacter(size)).toEqual(result);
@@ -258,7 +258,7 @@ describe("Stream", () => {
     describe("encode", () => {
         function factory(name: string, input: Buffer, output: Buffer): void {
             it(name, () => {
-                const stream = new Stream();
+                const stream = new DirectStream();
 
                 expect(stream.encode(input)).toEqual(output);
             });
