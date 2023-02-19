@@ -17,6 +17,7 @@
  */
 
 import SafeEventEmitter from "../lib/SafeEventEmitter";
+import { ControlCharacters } from "./controlCharacters";
 import DirectStream, { DirectStreamEvents } from "./DirectStream";
 import type IOProvider from "./providers/IOProvider";
 import { IOProviderEvents } from "./providers/IOProvider";
@@ -59,5 +60,40 @@ export default class Stream extends SafeEventEmitter<StreamEventArguments> {
         this._provider.on(IOProviderEvents.Close, () => {
             this.emit(StreamEvents.Close);
         });
+    }
+
+    /**
+     * Write and encode data to send to the provider
+     */
+    public write(data: Buffer): void {
+        this._provider.write(this._stream.encode(data));
+    }
+
+    /**
+     * Terminates the current packet.
+     */
+    public endPacket(): void {
+        this._provider.write(Buffer.from([ControlCharacters.EndOfPacket]));
+    }
+
+    /**
+     * Write data and end the current packet. This is equivalent to calling {@link Stream.write} and {@link Stream.endPacket} in sequence.
+     */
+    public writePacket(data: Buffer): void {
+        this._provider.write(Buffer.concat([this._stream.encode(data), Buffer.from([ControlCharacters.EndOfPacket])]));
+    }
+
+    /**
+     * Trigger a read reset.
+     */
+    public readReset(): void {
+        this._provider.write(Buffer.from([ControlCharacters.ReadReset]));
+    }
+
+    /**
+     * Close the connection
+     */
+    public close(): void {
+        this._provider.close();
     }
 }
