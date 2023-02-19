@@ -35,7 +35,7 @@ export type DirectStreamEventArguments = {
      * Fires with three arguments, the size read in ControlCharacters, the number of that size read, and the data read.
      * ReadByte will return Number, the rest will return Buffer.
      */
-    [DirectStreamEvents.Read]: [ControlCharacters.ReadByte, 1, number] | [Exclude<ControlCharacters, ControlCharacters.ReadByte>, number, Buffer];
+    [DirectStreamEvents.Read]: [ControlCharacters.ReadByte, 1, number] | [SizedControlCharacters, number, Buffer];
     /** Emitted when an End of Packet is received along with (size, data) parameters. */
     [DirectStreamEvents.Packet]: [number, Buffer];
 };
@@ -177,12 +177,13 @@ export default class DirectStream extends SafeEventEmitter<DirectStreamEventArgu
      * @param data The actual data that was read
      */
     private _emitRead(info: { controlCharacter: ControlCharacters.ReadByte; bytes: 1; numberOfType: 1 }, data: number): void;
+    private _emitRead(info: { controlCharacter: SizedControlCharacters; bytes: number; numberOfType: number }, data: Buffer): void;
     private _emitRead(
-        info: { controlCharacter: Exclude<ControlCharacters, ControlCharacters.ReadByte>; bytes: number; numberOfType: number },
-        data: Buffer
-    ): void;
-    private _emitRead(
-        { controlCharacter, bytes, numberOfType }: { controlCharacter: ControlCharacters; bytes: number; numberOfType: number },
+        {
+            controlCharacter,
+            bytes,
+            numberOfType
+        }: { controlCharacter: SizedControlCharacters | ControlCharacters.ReadByte; bytes: number; numberOfType: number },
         data: Buffer | number
     ): void {
         this._packet = Buffer.concat([this._packet, data instanceof Buffer ? data : Buffer.from([data])]);
