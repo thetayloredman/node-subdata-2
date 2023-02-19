@@ -18,7 +18,27 @@
 
 import SafeEventEmitter from "./lib/SafeEventEmitter.js";
 import { bytes, kb, mb } from "./lib/sizeHelpers.js";
+import Stream from "./stream/";
 import { ControlCharacters, SizedControlCharacters } from "./stream/controlCharacters.js";
 import DirectStream, { DirectStreamEventArguments, DirectStreamEvents } from "./stream/DirectStream.js";
+import IOProvider, { IOProviderEventArguments, IOProviderEvents } from "./stream/providers/IOProvider.js";
+import TCPIOProvider, { TCPIOProviderEventArguments, TCPIOProviderEvents } from "./stream/providers/TCPIOProvider.js";
 
-export { bytes, ControlCharacters, DirectStream, DirectStreamEventArguments, DirectStreamEvents, kb, mb, SafeEventEmitter, SizedControlCharacters };
+export {
+    bytes,
+    ControlCharacters,
+    DirectStream,
+    DirectStreamEventArguments,
+    DirectStreamEvents,
+    IOProvider,
+    IOProviderEventArguments,
+    IOProviderEvents,
+    kb,
+    mb,
+    SafeEventEmitter,
+    SizedControlCharacters,
+    Stream,
+    TCPIOProvider,
+    TCPIOProviderEventArguments,
+    TCPIOProviderEvents
+};
