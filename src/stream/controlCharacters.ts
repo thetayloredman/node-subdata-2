@@ -43,6 +43,7 @@ enum ControlCharacters {
     /** **Read Reset**: Invalidates any data before this (if possible) and resets */
     ReadReset = 0x18
 }
+/** All {@link ControlCharacters} with a size argument */
 type SizedControlCharacters =
     | ControlCharacters.ReadBytes
     | ControlCharacters.ReadKB

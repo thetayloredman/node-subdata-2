@@ -18,7 +18,7 @@
 
 import { kb, mb } from "../../lib/sizeHelpers";
 import { ControlCharacters } from "../../stream/controlCharacters";
-import DirectStream, { DirectStreamEvents } from "../../stream/directstream";
+import DirectStream, { DirectStreamEvents } from "../../stream/DirectStream";
 
 /** Makes a new {@link DirectStream} and attaches listeners. */
 function makeNewStream(): { stream: DirectStream; onRead: jest.Mock; onPacket: jest.Mock; onReset: jest.Mock } {

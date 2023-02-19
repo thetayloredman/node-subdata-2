@@ -17,7 +17,8 @@
  */
 
 import SafeEventEmitter from "./lib/SafeEventEmitter.js";
-import { ControlCharacters } from "./stream/controlCharacters.js";
-import DirectStream, { DirectStreamEventArguments, DirectStreamEvents } from "./stream/directstream.js";
+import { bytes, kb, mb } from "./lib/sizeHelpers.js";
+import { ControlCharacters, SizedControlCharacters } from "./stream/controlCharacters.js";
+import DirectStream, { DirectStreamEventArguments, DirectStreamEvents } from "./stream/DirectStream.js";
 
-export { ControlCharacters, DirectStream, DirectStreamEventArguments, DirectStreamEvents, SafeEventEmitter };
+export { bytes, ControlCharacters, DirectStream, DirectStreamEventArguments, DirectStreamEvents, kb, mb, SafeEventEmitter, SizedControlCharacters };
