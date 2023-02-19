@@ -30,17 +30,41 @@ export enum StreamEvents {
 }
 
 export type StreamEventArguments = {
+    /**
+     * Fired when new data is received over the connection. You probably want `Packet` instead.
+     */
     [StreamEvents.Read]: [Buffer];
+    /**
+     * Fired whenever an End Of Packet is received, with two parameters, size and data.
+     */
     [StreamEvents.Packet]: [number, Buffer];
+    /**
+     * Fired whenever the remote sends Read Reset.
+     */
     [StreamEvents.Reset]: [];
+    /**
+     * Fired when the connection is closing.
+     */
     [StreamEvents.Close]: [];
 };
 
+/**
+ * Represents the SubData 2 {@link https://github.com/ME1312/SubData-2/wiki/Protocol-Format#layer-1-the-stream Layer 1 Stream}.
+ *
+ * This class provides a variety of methods for transmitting and receiving data and is mostly responsible for controlling
+ * the usage of control characters throughout the data transmitted. SubData 2 is always TCP, however, there is a concept
+ * of "providers" allowing you to use the SubData protocol (and this library) over another type of connection.
+ */
 export default class Stream extends SafeEventEmitter<StreamEventArguments> {
+    /** The underlying provider that is serving this Stream */
     private _provider: IOProvider;
+    /** The underlying DirectStream, responsible for encoding */
     private _stream: DirectStream;
 
-    /** @param provider The underlying {@link IOProvider} to use */
+    /**
+     * Create a new Stream.
+     * @param provider The provider to use for this Stream
+     */
     public constructor(provider: IOProvider) {
         super();
         this._provider = provider;
@@ -64,6 +88,8 @@ export default class Stream extends SafeEventEmitter<StreamEventArguments> {
 
     /**
      * Write and encode data to send to the provider
+     * Note: You probably want {@link Stream.writePacket} instead.
+     * @param data The data to write
      */
     public write(data: Buffer): void {
         this._provider.write(this._stream.encode(data));
@@ -71,20 +97,22 @@ export default class Stream extends SafeEventEmitter<StreamEventArguments> {
 
     /**
      * Terminates the current packet.
+     * Note: This is often easier performed in one write via {@link Stream.writePacket}.
      */
     public endPacket(): void {
         this._provider.write(Buffer.from([ControlCharacters.EndOfPacket]));
     }
 
     /**
-     * Write data and end the current packet. This is equivalent to calling {@link Stream.write} and {@link Stream.endPacket} in sequence.
+     * Write data and end the current packet. This is equivalent to calling {@link Stream.write} and {@link Stream.endPacket} in sequence,
+     * however, this will send both in one single transmission, which is probably marginally more efficient.
      */
     public writePacket(data: Buffer): void {
         this._provider.write(Buffer.concat([this._stream.encode(data), Buffer.from([ControlCharacters.EndOfPacket])]));
     }
 
     /**
-     * Trigger a read reset.
+     * Trigger a read reset and tell the remote server to discard all data.
      */
     public readReset(): void {
         this._provider.write(Buffer.from([ControlCharacters.ReadReset]));
