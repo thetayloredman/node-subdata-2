@@ -36,4 +36,6 @@ export type IOProviderEventArguments = {
 export default interface IOProvider extends SafeEventEmitter<IOProviderEventArguments> {
     /** Write new data to the underlying connection */
     write(data: Buffer): void;
+    /** Close the underlying connection */
+    close(): void;
 }

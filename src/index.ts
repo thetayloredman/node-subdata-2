@@ -22,7 +22,8 @@ import Stream from "./stream/";
 import { ControlCharacters, SizedControlCharacters } from "./stream/controlCharacters.js";
 import DirectStream, { DirectStreamEventArguments, DirectStreamEvents } from "./stream/DirectStream.js";
 import IOProvider, { IOProviderEventArguments, IOProviderEvents } from "./stream/providers/IOProvider.js";
-import TCPIOProvider, { TCPIOProviderEventArguments, TCPIOProviderEvents } from "./stream/providers/TCPIOProvider.js";
+import ManualIOProvider from "./stream/providers/ManualIOProvider.js";
+import TCPIOProvider from "./stream/providers/TCPIOProvider.js";
 
 export {
     bytes,
@@ -34,11 +35,10 @@ export {
     IOProviderEventArguments,
     IOProviderEvents,
     kb,
+    ManualIOProvider,
     mb,
     SafeEventEmitter,
     SizedControlCharacters,
     Stream,
-    TCPIOProvider,
-    TCPIOProviderEventArguments,
-    TCPIOProviderEvents
+    TCPIOProvider
 };

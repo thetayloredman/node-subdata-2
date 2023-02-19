@@ -21,29 +21,13 @@ import { type Socket, createConnection } from "node:net";
 
 import SafeEventEmitter from "../../lib/SafeEventEmitter";
 import type IOProvider from "./IOProvider";
-
-/** Represents all possible events from a {@link TCPIOProvider} */
-export enum TCPIOProviderEvents {
-    Close = "close",
-    Data = "data"
-}
-
-/** Represents all possible arguments for events from a {@link TCPIOProvider} */
-export type TCPIOProviderEventArguments = {
-    /**
-     * Emitted when the underlying connection is closed
-     */
-    [TCPIOProviderEvents.Close]: [boolean];
-    /**
-     * Emitted when new data is received
-     */
-    [TCPIOProviderEvents.Data]: [Buffer];
-};
+import type { IOProviderEventArguments } from "./IOProvider";
+import { IOProviderEvents } from "./IOProvider";
 
 /**
  * A simple {@link IOProvider} for TCP connections
  */
-export default class TCPIOProvider extends SafeEventEmitter<TCPIOProviderEventArguments> implements IOProvider {
+export default class TCPIOProvider extends SafeEventEmitter<IOProviderEventArguments> implements IOProvider {
     /** The underlying TCP connection */
     private _socket: Socket;
 
@@ -60,11 +44,16 @@ export default class TCPIOProvider extends SafeEventEmitter<TCPIOProviderEventAr
 
     /** Handle new data from the underlying connection */
     private _handleData(data: Buffer): void {
-        this.emit(TCPIOProviderEvents.Data, data);
+        this.emit(IOProviderEvents.Data, data);
     }
 
     /** Handle the underlying connection being closed */
-    private _handleClose(hadError: boolean): void {
-        this.emit(TCPIOProviderEvents.Close, hadError);
+    private _handleClose(): void {
+        this.emit(IOProviderEvents.Close);
+    }
+
+    /** Close the underlying connection */
+    public close(): void {
+        this._socket.end();
     }
 }
