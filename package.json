@@ -79,5 +79,8 @@
             "prettier --write"
         ]
     },
-    "packageManager": "yarn@3.4.1"
+    "packageManager": "yarn@3.4.1",
+    "dependencies": {
+        "strict-event-emitter": "^0.4.6"
+    }
 }

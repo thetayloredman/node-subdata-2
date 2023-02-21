@@ -16,7 +16,8 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-import SafeEventEmitter from "../../lib/SafeEventEmitter";
+import { Emitter } from "strict-event-emitter";
+
 import type IOProvider from "./IOProvider";
 import type { IOProviderEventArguments } from "./IOProvider";
 import { IOProviderEvents } from "./IOProvider";
@@ -27,9 +28,9 @@ import { IOProviderEvents } from "./IOProvider";
  * **You probably do not want to use this.** This should only be used in unit tests for SD2. We will not
  * support use-cases that involve this provider.
  */
-export default class ManualIOProvider extends SafeEventEmitter<IOProviderEventArguments> implements IOProvider {
+export default class ManualIOProvider extends Emitter<IOProviderEventArguments> implements IOProvider {
     /** Functions for reading/writing */
-    public manual: SafeEventEmitter<{ data: [Buffer]; close: [] }> & {
+    public manual: Emitter<{ data: [Buffer]; close: [] }> & {
         write: (data: Buffer) => void;
         close: () => void;
         error: (error: Error) => void;
@@ -37,7 +38,7 @@ export default class ManualIOProvider extends SafeEventEmitter<IOProviderEventAr
 
     public constructor() {
         super();
-        this.manual = Object.assign(new SafeEventEmitter(), {
+        this.manual = Object.assign(new Emitter<{ data: [Buffer]; close: [] }>(), {
             write: (data: Buffer): void => {
                 this.emit(IOProviderEvents.Data, data);
             },
