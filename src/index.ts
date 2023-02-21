@@ -18,6 +18,9 @@
 
 import SafeEventEmitter from "./lib/SafeEventEmitter.js";
 import { bytes, kb, mb } from "./lib/sizeHelpers.js";
+import Shell, { ShellEventArguments, ShellEvents } from "./shell/";
+import RawShellAlgorithm from "./shell/algorithms/Raw.js";
+import ShellAlgorithm from "./shell/algorithms/ShellAlgorithm.js";
 import Stream from "./stream/";
 import { ControlCharacters, SizedControlCharacters } from "./stream/controlCharacters.js";
 import DirectStream, { DirectStreamEventArguments, DirectStreamEvents } from "./stream/DirectStream.js";
@@ -37,7 +40,12 @@ export {
     kb,
     ManualIOProvider,
     mb,
+    RawShellAlgorithm,
     SafeEventEmitter,
+    Shell,
+    ShellAlgorithm,
+    ShellEventArguments,
+    ShellEvents,
     SizedControlCharacters,
     Stream,
     TCPIOProvider
