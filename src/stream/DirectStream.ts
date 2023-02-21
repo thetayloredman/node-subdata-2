@@ -276,7 +276,11 @@ export default class DirectStream extends SafeEventEmitter<DirectStreamEventArgu
             if (controlCharacter === ControlCharacters.ReadByte) {
                 results.push([controlCharacter, input.subarray(size - remaining, size - remaining + 1)]);
                 remaining -= 1;
-            } else if ([ControlCharacters.ReadBytes, ControlCharacters.ReadKB, ControlCharacters.ReadMB].includes(controlCharacter)) {
+                continue;
+            }
+
+            /* istanbul ignore else */
+            if ([ControlCharacters.ReadBytes, ControlCharacters.ReadKB, ControlCharacters.ReadMB].includes(controlCharacter)) {
                 let byteSize;
                 switch (controlCharacter) {
                     case ControlCharacters.ReadBytes:
@@ -295,7 +299,11 @@ export default class DirectStream extends SafeEventEmitter<DirectStreamEventArgu
 
                 results.push([controlCharacter, number, input.subarray(size - remaining, size - remaining + byteSize)]);
                 remaining -= byteSize;
-            } else throw new Error(`Unrecognized control character returned by _bestControlCharacter for size ${remainder}`);
+                continue;
+            }
+
+            /* istanbul ignore next */
+            throw new Error(`Unrecognized control character returned by _bestControlCharacter for size ${remainder}`);
         }
         return Buffer.from(results.flat().flatMap((x) => (x instanceof Buffer ? Array.from(x.values()) : x)));
     }

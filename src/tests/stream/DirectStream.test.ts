@@ -319,4 +319,12 @@ describe("Stream", () => {
         );
         // TODO: more?
     });
+
+    it("fails for unsupported read sizes", () => {
+        const stream = new DirectStream();
+
+        expect(() => stream.feed(Buffer.from([ControlCharacters.ReadGB]))).toThrow(
+            "Internal error: ReadGB, ReadTB, and ReadPB are not yet implemented."
+        );
+    });
 });
