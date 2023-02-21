@@ -53,9 +53,6 @@ export default class Shell extends SafeEventEmitter<ShellEventArguments> {
         this._stream.on(StreamEvents.Packet, (size, packet) => {
             this.emit(ShellEvents.Packet, size, this._algorithm.decode(packet));
         });
-        this._stream.on(StreamEvents.Close, () => {
-            this.emit(ShellEvents.Close);
-        });
     }
 
     /** Send a packet. */
