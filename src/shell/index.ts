@@ -16,10 +16,14 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
+import debug from "debug";
+
 import SafeEventEmitter from "../lib/SafeEventEmitter";
 import type Stream from "../stream";
 import { StreamEvents } from "../stream";
 import type ShellAlgorithm from "./algorithms/ShellAlgorithm";
+
+const log = debug("node-subdata-2:shell");
 
 export enum ShellEvents {
     /** Fired when a new packet is received */
@@ -45,23 +49,28 @@ export default class Shell extends SafeEventEmitter<ShellEventArguments> {
 
     public constructor(algorithm: ShellAlgorithm, stream: Stream) {
         super();
+        log("initializing");
         this._algorithm = algorithm;
         this._stream = stream;
         this._stream.on(StreamEvents.Close, () => {
+            log("forwarding close");
             this.emit(ShellEvents.Close);
         });
         this._stream.on(StreamEvents.Packet, (size, packet) => {
+            log("forwarding+decoding packet", packet);
             this.emit(ShellEvents.Packet, size, this._algorithm.decode(packet));
         });
     }
 
     /** Send a packet. */
     public send(data: Buffer): void {
+        log("encoding+sending packet", data);
         this._stream.writePacket(this._algorithm.encode(data));
     }
 
     /** Close the underlying connection. */
     public close(): void {
+        log("closing");
         this._stream.close();
     }
 }

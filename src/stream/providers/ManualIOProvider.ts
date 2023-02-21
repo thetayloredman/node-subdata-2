@@ -16,11 +16,14 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
+import debug from "debug";
 import { Emitter } from "strict-event-emitter";
 
 import type IOProvider from "./IOProvider";
 import type { IOProviderEventArguments } from "./IOProvider";
 import { IOProviderEvents } from "./IOProvider";
+
+const log = debug("node-subdata-2:stream:providers:ManualIOProvider");
 
 /**
  * An {@link IOProvider} that has manual writing functions, used in testing.
@@ -40,12 +43,15 @@ export default class ManualIOProvider extends Emitter<IOProviderEventArguments> 
         super();
         this.manual = Object.assign(new Emitter<{ data: [Buffer]; close: [] }>(), {
             write: (data: Buffer): void => {
+                log("rx", data);
                 this.emit(IOProviderEvents.Data, data);
             },
             close: (): void => {
+                log("Received close");
                 this.emit(IOProviderEvents.Close);
             },
             error: (error: Error): void => {
+                log("Received error", error);
                 this.emit(IOProviderEvents.Error, error);
             }
         });
@@ -53,11 +59,13 @@ export default class ManualIOProvider extends Emitter<IOProviderEventArguments> 
 
     /** Write new data to this IOProvider */
     public write(data: Buffer): void {
+        log("tx", data);
         this.manual.emit("data", data);
     }
 
     /** Close this IOProvider */
     public close(): void {
+        log("Commanded close");
         this.manual.emit("close");
     }
 }

@@ -16,11 +16,15 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
+import debug from "debug";
+
 import SafeEventEmitter from "../lib/SafeEventEmitter";
 import { ControlCharacters } from "./controlCharacters";
 import DirectStream, { DirectStreamEvents } from "./DirectStream";
 import type IOProvider from "./providers/IOProvider";
 import { IOProviderEvents } from "./providers/IOProvider";
+
+const log = debug("node-subdata-2:stream");
 
 export enum StreamEvents {
     Read = "read",
@@ -67,21 +71,27 @@ export default class Stream extends SafeEventEmitter<StreamEventArguments> {
      */
     public constructor(provider: IOProvider) {
         super();
+        log("initializing");
         this._provider = provider;
         this._stream = new DirectStream();
         this._provider.on(IOProviderEvents.Data, (data) => {
+            log("feeding data", data);
             this._stream.feed(data);
         });
         this._stream.on(DirectStreamEvents.ReadReset, () => {
+            log("forwarding reset");
             this.emit(StreamEvents.Reset);
         });
         this._stream.on(DirectStreamEvents.Read, (_size, _count, data) => {
+            log("forwarding read", data);
             this.emit(StreamEvents.Read, data instanceof Buffer ? data : Buffer.from([data]));
         });
         this._stream.on(DirectStreamEvents.Packet, (size, data) => {
+            log("forwarding packet", data);
             this.emit(StreamEvents.Packet, size, data);
         });
         this._provider.on(IOProviderEvents.Close, () => {
+            log("forwarding close");
             this.emit(StreamEvents.Close);
         });
     }
@@ -92,6 +102,7 @@ export default class Stream extends SafeEventEmitter<StreamEventArguments> {
      * @param data The data to write
      */
     public write(data: Buffer): void {
+        log("writing", data);
         this._provider.write(this._stream.encode(data));
     }
 
@@ -100,6 +111,7 @@ export default class Stream extends SafeEventEmitter<StreamEventArguments> {
      * Note: This is often easier performed in one write via {@link Stream.writePacket}.
      */
     public endPacket(): void {
+        log("ending packet");
         this._provider.write(Buffer.from([ControlCharacters.EndOfPacket]));
     }
 
@@ -108,6 +120,7 @@ export default class Stream extends SafeEventEmitter<StreamEventArguments> {
      * however, this will send both in one single transmission, which is probably marginally more efficient.
      */
     public writePacket(data: Buffer): void {
+        log("writing packet of", data);
         this._provider.write(Buffer.concat([this._stream.encode(data), Buffer.from([ControlCharacters.EndOfPacket])]));
     }
 
@@ -115,6 +128,7 @@ export default class Stream extends SafeEventEmitter<StreamEventArguments> {
      * Trigger a read reset and tell the remote server to discard all data.
      */
     public readReset(): void {
+        log("triggering read reset");
         this._provider.write(Buffer.from([ControlCharacters.ReadReset]));
     }
 
@@ -122,6 +136,7 @@ export default class Stream extends SafeEventEmitter<StreamEventArguments> {
      * Close the connection
      */
     public close(): void {
+        log("triggering close");
         this._provider.close();
     }
 }

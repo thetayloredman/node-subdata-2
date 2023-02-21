@@ -16,15 +16,21 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
+import debug from "debug";
+
 import type ShellAlgorithm from "./ShellAlgorithm";
+
+const log = debug("node-subdata-2:shell:algorithms:Raw");
 
 /** The initial {@link ShellAlgorithm} used before any encryption is enabled. */
 export default class RawShellAlgorithm implements ShellAlgorithm {
     public encode(data: Buffer): Buffer {
+        log("encoding", data, "to", data);
         return data;
     }
 
     public decode(packet: Buffer): Buffer {
+        log("decoding", packet, "to", packet);
         return packet;
     }
 }

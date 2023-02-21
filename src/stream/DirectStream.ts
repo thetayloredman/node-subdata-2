@@ -16,9 +16,13 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
+import debug from "debug";
+
 import SafeEventEmitter from "../lib/SafeEventEmitter";
 import { bytes, kb, mb } from "../lib/sizeHelpers";
 import { type SizedControlCharacters, ControlCharacters } from "./controlCharacters";
+
+const log = debug("node-subdata-2:stream:DirectStream");
 
 export enum DirectStreamEvents {
     ReadReset = "reset",
@@ -64,6 +68,7 @@ export default class DirectStream extends SafeEventEmitter<DirectStreamEventArgu
 
     public constructor() {
         super();
+        log("initializing");
         this._buffer = Buffer.alloc(0);
         this._bufferSize = 0;
         this._packet = Buffer.alloc(0);
@@ -75,8 +80,10 @@ export default class DirectStream extends SafeEventEmitter<DirectStreamEventArgu
      * @param data The data to feed
      */
     public feed(data: Buffer): void {
+        log("feeding data", data, "size", data.length);
         this._buffer = Buffer.concat([this._buffer, data]);
         this._bufferSize += data.length;
+        log("new data", this._buffer, "size", this._bufferSize);
         this._handleNewData();
     }
 
@@ -84,6 +91,7 @@ export default class DirectStream extends SafeEventEmitter<DirectStreamEventArgu
      * Invalidates all previous data. Called internally when a {@link ControlCharacters.ReadReset} is encountered.
      */
     private _readReset(): void {
+        log("triggering read reset");
         this._buffer = Buffer.alloc(0);
         this._bufferSize = 0;
         this._packet = Buffer.alloc(0);
@@ -101,11 +109,15 @@ export default class DirectStream extends SafeEventEmitter<DirectStreamEventArgu
         if (!(char.toString() in ControlCharacters))
             throw new Error(`I don't know what I am looking at! Encountered unknown control character 0x${this._buffer[0].toString(16)} in stream.`);
 
+        log("handling control character", ControlCharacters[char]);
+
         switch (this._buffer[0]) {
             case ControlCharacters.ReadReset:
                 const postReset = this._buffer.subarray(1);
+                log("triggering read reset, following data", postReset);
                 this._readReset();
                 // Re-insert all data that follows the reset
+                log("re-feeding data");
                 this.feed(postReset);
                 break;
             case ControlCharacters.ReadByte:
@@ -186,6 +198,7 @@ export default class DirectStream extends SafeEventEmitter<DirectStreamEventArgu
         }: { controlCharacter: SizedControlCharacters | ControlCharacters.ReadByte; bytes: number; numberOfType: number },
         data: Buffer | number
     ): void {
+        log("triggering read event of type", ControlCharacters[controlCharacter], "with data", data, "and size", bytes, "bytes");
         this._packet = Buffer.concat([this._packet, data instanceof Buffer ? data : Buffer.from([data])]);
         this._packetSize += bytes;
         /* istanbul ignore if: this should never reasonably happen & is untestable without a LOT of work */
@@ -203,6 +216,7 @@ export default class DirectStream extends SafeEventEmitter<DirectStreamEventArgu
 
     /** Called internally to clear and emit a packet. */
     private _emitPacket(): void {
+        debug("triggering packet");
         this.emit(DirectStreamEvents.Packet, this._packetSize, this._packet);
         this._packet = Buffer.alloc(0);
         this._packetSize = 0;
@@ -213,6 +227,7 @@ export default class DirectStream extends SafeEventEmitter<DirectStreamEventArgu
      * @param count The amount to shift the buffer by
      */
     private _shiftBuffer(count: number): void {
+        log("shifting internal buffer by", count);
         this._buffer = this._buffer.subarray(count);
         this._bufferSize -= count;
     }
@@ -229,11 +244,20 @@ export default class DirectStream extends SafeEventEmitter<DirectStreamEventArgu
         size: number,
         sizeFn: (s: number) => number
     ): { controlCharacter: SizedControlCharacters; number: number; remainder: number } {
-        return {
+        const result = {
             controlCharacter,
             number: Math.min(255, Math.floor(size / sizeFn(4)) - 1),
             remainder: size - sizeFn(4) * (Math.min(255, Math.floor(size / sizeFn(4)) - 1) + 1)
         };
+        log(
+            "calculated control character data for size",
+            size,
+            "(using arbitrary units) and control character",
+            ControlCharacters[controlCharacter],
+            "as",
+            result
+        );
+        return result;
     }
 
     /**
@@ -247,11 +271,17 @@ export default class DirectStream extends SafeEventEmitter<DirectStreamEventArgu
         | { controlCharacter: ControlCharacters.ReadByte; number: -1; remainder: number }
         | { controlCharacter: SizedControlCharacters; number: number; remainder: number }
         | false {
-        if (size < 1) return false;
-        if (size < 4) return { controlCharacter: ControlCharacters.ReadByte, number: -1, remainder: size - 1 };
-        if (size < kb(4)) return this._calculateControlCharacterRemainder(ControlCharacters.ReadBytes, size, bytes);
-        if (size < mb(4)) return this._calculateControlCharacterRemainder(ControlCharacters.ReadKB, size, kb);
-        return this._calculateControlCharacterRemainder(ControlCharacters.ReadMB, size, mb);
+        let result:
+            | { controlCharacter: ControlCharacters.ReadByte; number: -1; remainder: number }
+            | { controlCharacter: SizedControlCharacters; number: number; remainder: number }
+            | false;
+        if (size < 1) result = false;
+        else if (size < 4) result = { controlCharacter: ControlCharacters.ReadByte, number: -1, remainder: size - 1 };
+        else if (size < kb(4)) result = this._calculateControlCharacterRemainder(ControlCharacters.ReadBytes, size, bytes);
+        else if (size < mb(4)) result = this._calculateControlCharacterRemainder(ControlCharacters.ReadKB, size, kb);
+        else result = this._calculateControlCharacterRemainder(ControlCharacters.ReadMB, size, mb);
+        log("best control character for size", size, "is", result);
+        return result;
     }
 
     /**
@@ -259,6 +289,7 @@ export default class DirectStream extends SafeEventEmitter<DirectStreamEventArgu
      * @param data The data to encode
      */
     public encode(input: Buffer): Buffer {
+        log("encoding data", input);
         const size = input.length;
         let remaining = size;
         // TODO: Change this when GB/TB/PB support is added.
@@ -269,6 +300,7 @@ export default class DirectStream extends SafeEventEmitter<DirectStreamEventArgu
         // and convert it to a Buffer.
         const results = [];
         while (remaining > 0) {
+            log("remaining size", remaining);
             const data = this._bestControlCharacter(remaining);
             /* istanbul ignore next: this should never happen */
             if (data === false) throw new Error("This should never happen");
@@ -305,6 +337,8 @@ export default class DirectStream extends SafeEventEmitter<DirectStreamEventArgu
             /* istanbul ignore next */
             throw new Error(`Unrecognized control character returned by _bestControlCharacter for size ${remainder}`);
         }
-        return Buffer.from(results.flat().flatMap((x) => (x instanceof Buffer ? Array.from(x.values()) : x)));
+        const result = Buffer.from(results.flat().flatMap((x) => (x instanceof Buffer ? Array.from(x.values()) : x)));
+        log("final result", result);
+        return result;
     }
 }

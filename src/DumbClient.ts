@@ -16,10 +16,14 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
+import debug from "debug";
+
 import SafeEventEmitter from "./lib/SafeEventEmitter";
 import Packet from "./Packet";
 import type Shell from "./shell";
 import { ShellEvents } from "./shell";
+
+const log = debug("node-subdata-2:DumbClient");
 
 /** A list of possible events for a {@link DumbClient} */
 export enum DumbClientEvents {
@@ -48,11 +52,14 @@ export default class DumbClient extends SafeEventEmitter<DumbClientEventArgument
      */
     public constructor(shell: Shell) {
         super();
+        log("initializing");
         this._shell = shell;
         this._shell.on(ShellEvents.Close, () => {
+            log("forwarding close");
             this.emit(DumbClientEvents.Close);
         });
         this._shell.on(ShellEvents.Packet, (_size, data) => {
+            log("forwarding packet", data);
             this.emit(DumbClientEvents.Packet, new Packet(data));
         });
     }
@@ -61,11 +68,13 @@ export default class DumbClient extends SafeEventEmitter<DumbClientEventArgument
      * Terminate the TCP level of the connection. This does not send the disconnect packets.
      */
     public close() {
+        log("triggering close");
         this._shell.close();
     }
 
     /** Send a {@link Packet} over the stream. */
     public send(data: Packet) {
+        log("sending packet", data);
         this._shell.send(data.toRaw());
     }
 }

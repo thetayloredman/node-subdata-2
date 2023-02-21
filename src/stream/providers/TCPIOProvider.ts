@@ -19,10 +19,14 @@
 import type { NetConnectOpts } from "node:net";
 import { type Socket, createConnection } from "node:net";
 
+import debug from "debug";
+
 import SafeEventEmitter from "../../lib/SafeEventEmitter";
 import type IOProvider from "./IOProvider";
 import type { IOProviderEventArguments } from "./IOProvider";
 import { IOProviderEvents } from "./IOProvider";
+
+const log = debug("node-subdata-2:stream:providers:TCPIOProvider");
 
 /**
  * A simple {@link IOProvider} for TCP connections
@@ -34,26 +38,31 @@ export default class TCPIOProvider extends SafeEventEmitter<IOProviderEventArgum
     public constructor(options: NetConnectOpts) {
         super();
         this._socket = createConnection(options);
+        log("now listening");
         this._socket.on("data", this._handleData).on("close", this._handleClose);
     }
 
     /** Write new data to this IOProvider */
     public write(data: Buffer): void {
+        log("tx", data);
         this._socket.write(data);
     }
 
     /** Handle new data from the underlying connection */
     private _handleData(data: Buffer): void {
+        log("rx", data);
         this.emit(IOProviderEvents.Data, data);
     }
 
     /** Handle the underlying connection being closed */
     private _handleClose(): void {
+        log("Received close");
         this.emit(IOProviderEvents.Close);
     }
 
     /** Close the underlying connection */
     public close(): void {
+        log("Commanded close");
         this._socket.end();
     }
 }
