@@ -16,6 +16,7 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
+import DumbClient, { DumbClientEventArguments, DumbClientEvents } from "./DumbClient";
 import SafeEventEmitter from "./lib/SafeEventEmitter.js";
 import { bytes, kb, mb } from "./lib/sizeHelpers.js";
 import Shell, { ShellEventArguments, ShellEvents } from "./shell/";
@@ -34,6 +35,9 @@ export {
     DirectStream,
     DirectStreamEventArguments,
     DirectStreamEvents,
+    DumbClient,
+    DumbClientEventArguments,
+    DumbClientEvents,
     IOProvider,
     IOProviderEventArguments,
     IOProviderEvents,

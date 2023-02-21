@@ -62,4 +62,9 @@ export default class Shell extends SafeEventEmitter<ShellEventArguments> {
     public send(data: Buffer): void {
         this._stream.writePacket(this._algorithm.encode(data));
     }
+
+    /** Close the underlying connection. */
+    public close(): void {
+        this._stream.close();
+    }
 }
