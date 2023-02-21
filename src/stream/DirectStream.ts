@@ -212,7 +212,7 @@ export default class DirectStream extends SafeEventEmitter<DirectStreamEventArgu
      * Shift the buffer by a certain amount.
      * @param count The amount to shift the buffer by
      */
-    private _shiftBuffer(count = 0): void {
+    private _shiftBuffer(count: number): void {
         this._buffer = this._buffer.subarray(count);
         this._bufferSize -= count;
     }
