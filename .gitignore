@@ -2,3 +2,7 @@
 /coverage/
 /node_modules/
 /docs/
+.yarn/*
+!.yarn/releases
+!.yarn/plugins
+.pnp.*
