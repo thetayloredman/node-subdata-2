@@ -19,10 +19,11 @@
 import DumbClient, { DumbClientEventArguments, DumbClientEvents } from "./DumbClient";
 import SafeEventEmitter from "./lib/SafeEventEmitter.js";
 import { bytes, kb, mb } from "./lib/sizeHelpers.js";
+import Packet from "./Packet";
 import Shell, { ShellEventArguments, ShellEvents } from "./shell/";
 import RawShellAlgorithm from "./shell/algorithms/Raw.js";
 import ShellAlgorithm from "./shell/algorithms/ShellAlgorithm.js";
-import Stream from "./stream/";
+import Stream, { StreamEventArguments, StreamEvents } from "./stream/";
 import { ControlCharacters, SizedControlCharacters } from "./stream/controlCharacters.js";
 import DirectStream, { DirectStreamEventArguments, DirectStreamEvents } from "./stream/DirectStream.js";
 import IOProvider, { IOProviderEventArguments, IOProviderEvents } from "./stream/providers/IOProvider.js";
@@ -44,6 +45,7 @@ export {
     kb,
     ManualIOProvider,
     mb,
+    Packet,
     RawShellAlgorithm,
     SafeEventEmitter,
     Shell,
@@ -52,5 +54,7 @@ export {
     ShellEvents,
     SizedControlCharacters,
     Stream,
+    StreamEventArguments,
+    StreamEvents,
     TCPIOProvider
 };
