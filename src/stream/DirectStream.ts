@@ -17,8 +17,8 @@
  */
 
 import debug from "debug";
+import { Emitter } from "strict-event-emitter";
 
-import SafeEventEmitter from "../lib/SafeEventEmitter";
 import { bytes, kb, mb } from "../lib/sizeHelpers";
 import { type SizedControlCharacters, ControlCharacters } from "./controlCharacters";
 
@@ -56,7 +56,7 @@ export type DirectStreamEventArguments = {
  * This stream does not connect with an actual socket, it is just a wrapper around a buffer. You probably
  * want to use {@link Stream} for this purpose.
  */
-export default class DirectStream extends SafeEventEmitter<DirectStreamEventArguments> {
+export default class DirectStream extends Emitter<DirectStreamEventArguments> {
     /** The buffer of the stream */
     private _buffer: Buffer;
     /** The size of the buffer */

@@ -20,8 +20,8 @@ import type { NetConnectOpts } from "node:net";
 import { type Socket, createConnection } from "node:net";
 
 import debug from "debug";
+import { Emitter } from "strict-event-emitter";
 
-import SafeEventEmitter from "../../lib/SafeEventEmitter";
 import type IOProvider from "./IOProvider";
 import type { IOProviderEventArguments } from "./IOProvider";
 import { IOProviderEvents } from "./IOProvider";
@@ -31,7 +31,7 @@ const log = debug("node-subdata-2:stream:providers:TCPIOProvider");
 /**
  * A simple {@link IOProvider} for TCP connections
  */
-export default class TCPIOProvider extends SafeEventEmitter<IOProviderEventArguments> implements IOProvider {
+export default class TCPIOProvider extends Emitter<IOProviderEventArguments> implements IOProvider {
     /** The underlying TCP connection */
     private _socket: Socket;
 

@@ -16,6 +16,10 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
+import debug from "debug";
+
+const log = debug("node-subdata-2:Packet");
+
 /** Describes a SubData 2 packet. */
 export default class Packet {
     /** This packet's identification number */
@@ -30,15 +34,19 @@ export default class Packet {
     public constructor(raw: Buffer) {
         this.id = parseInt(raw.subarray(0, 2).toString("hex"), 16);
         this.data = raw.subarray(2);
+        log("new packet with id", this.id, "and data", this.data);
     }
 
     /** Convert this Packet to raw network data */
     public toRaw() {
-        return Buffer.concat([Buffer.from([this.id >> 8, this.id & 0xff]), this.data]);
+        const result = Buffer.concat([Buffer.from([this.id >> 8, this.id & 0xff]), this.data]);
+        log("converting packet with id", this.id.toString(16), "and data", this.data, "to raw", result);
+        return result;
     }
 
     /** Make a new Packet given an ID and data. */
     public static fromID(id: number, data: Buffer) {
+        log("from id", id.toString(16), "and data", data);
         return new Packet(Buffer.concat([Buffer.from([id >> 8, id & 0xff]), data]));
     }
 }

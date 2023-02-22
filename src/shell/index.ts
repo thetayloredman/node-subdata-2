@@ -17,8 +17,8 @@
  */
 
 import debug from "debug";
+import { Emitter } from "strict-event-emitter";
 
-import SafeEventEmitter from "../lib/SafeEventEmitter";
 import type Stream from "../stream";
 import { StreamEvents } from "../stream";
 import type ShellAlgorithm from "./algorithms/ShellAlgorithm";
@@ -43,7 +43,7 @@ export type ShellEventArguments = {
  * Represents and handles the {@link https://github.com/ME1312/SubData-2/wiki/Protocol-Format#layer-2-the-shell SubData 2 Shell}.
  * Given an {@link ShellAlgorithm}, call it with data, and hook onto an {@link Stream}.
  */
-export default class Shell extends SafeEventEmitter<ShellEventArguments> {
+export default class Shell extends Emitter<ShellEventArguments> {
     private _algorithm: ShellAlgorithm;
     private _stream: Stream;
 

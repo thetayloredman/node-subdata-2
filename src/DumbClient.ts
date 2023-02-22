@@ -17,8 +17,8 @@
  */
 
 import debug from "debug";
+import { Emitter } from "strict-event-emitter";
 
-import SafeEventEmitter from "./lib/SafeEventEmitter";
 import Packet from "./Packet";
 import type Shell from "./shell";
 import { ShellEvents } from "./shell";
@@ -43,7 +43,7 @@ export type DumbClientEventArguments = {
  * handshake or states, and leaves it up to the user. You probably
  * don't want to use this.
  */
-export default class DumbClient extends SafeEventEmitter<DumbClientEventArguments> {
+export default class DumbClient extends Emitter<DumbClientEventArguments> {
     private _shell: Shell;
 
     /**

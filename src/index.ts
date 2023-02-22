@@ -17,7 +17,6 @@
  */
 
 import DumbClient, { DumbClientEventArguments, DumbClientEvents } from "./DumbClient";
-import SafeEventEmitter from "./lib/SafeEventEmitter.js";
 import { bytes, kb, mb } from "./lib/sizeHelpers.js";
 import Packet from "./Packet";
 import Shell, { ShellEventArguments, ShellEvents } from "./shell/";
@@ -47,7 +46,6 @@ export {
     mb,
     Packet,
     RawShellAlgorithm,
-    SafeEventEmitter,
     Shell,
     ShellAlgorithm,
     ShellEventArguments,

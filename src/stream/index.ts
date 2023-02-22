@@ -17,8 +17,8 @@
  */
 
 import debug from "debug";
+import { Emitter } from "strict-event-emitter";
 
-import SafeEventEmitter from "../lib/SafeEventEmitter";
 import { ControlCharacters } from "./controlCharacters";
 import DirectStream, { DirectStreamEvents } from "./DirectStream";
 import type IOProvider from "./providers/IOProvider";
@@ -59,7 +59,7 @@ export type StreamEventArguments = {
  * the usage of control characters throughout the data transmitted. SubData 2 is always TCP, however, there is a concept
  * of "providers" allowing you to use the SubData protocol (and this library) over another type of connection.
  */
-export default class Stream extends SafeEventEmitter<StreamEventArguments> {
+export default class Stream extends Emitter<StreamEventArguments> {
     /** The underlying provider that is serving this Stream */
     private _provider: IOProvider;
     /** The underlying DirectStream, responsible for encoding */

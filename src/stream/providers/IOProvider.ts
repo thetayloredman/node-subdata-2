@@ -16,7 +16,7 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-import type SafeEventEmitter from "../../lib/SafeEventEmitter";
+import type { Emitter } from "strict-event-emitter";
 
 /** The list of possible events that an {@link IOProvider} can emit */
 export enum IOProviderEvents {
@@ -33,7 +33,7 @@ export type IOProviderEventArguments = {
 };
 
 /** Abstract interface that represents something that performs I/O, likely for a {@link Stream} */
-export default interface IOProvider extends SafeEventEmitter<IOProviderEventArguments> {
+export default interface IOProvider extends Emitter<IOProviderEventArguments> {
     /** Write new data to the underlying connection */
     write(data: Buffer): void;
     /** Close the underlying connection */
