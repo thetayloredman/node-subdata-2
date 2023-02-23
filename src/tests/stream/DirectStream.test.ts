@@ -20,6 +20,16 @@ import { kb, mb } from "../../lib/sizeHelpers";
 import { ControlCharacters } from "../../stream/controlCharacters";
 import DirectStream, { DirectStreamEvents } from "../../stream/DirectStream";
 
+/** Like C's memncmp() for buffers. Used in the large-buffer tests to avoid long test times */
+function bufncmp(n: number, left: Buffer, right: Buffer): number {
+    const len = Math.min(left.length, right.length, n);
+    for (let i = 0; i < len; i++) {
+        if (left[i] < right[i]) return -1;
+        if (left[i] > right[i]) return 1;
+    }
+    return 0;
+}
+
 /** Makes a new {@link DirectStream} and attaches listeners. */
 function makeNewStream(): { stream: DirectStream; onRead: jest.Mock; onPacket: jest.Mock; onReset: jest.Mock } {
     const stream = new DirectStream();
@@ -317,7 +327,22 @@ describe("Stream", () => {
                 0xff
             ])
         );
-        // TODO: more?
+        it("4kb", () => {
+            const stream = new DirectStream();
+
+            const expected = Buffer.concat([Buffer.from([ControlCharacters.ReadKB, 0x00]), Buffer.alloc(kb(4))]);
+
+            // Running .toEqual is extremely slow on huge buffers, so we use a custom bufncmp function
+            expect(bufncmp(3, stream.encode(expected.subarray(2)), expected)).toBe(0);
+        });
+        it("4mb", () => {
+            const stream = new DirectStream();
+
+            const expected = Buffer.concat([Buffer.from([ControlCharacters.ReadMB, 0x00]), Buffer.alloc(mb(4))]);
+
+            // See above
+            expect(bufncmp(3, stream.encode(expected.subarray(2)), expected)).toBe(0);
+        });
     });
 
     it("fails for unsupported read sizes", () => {
