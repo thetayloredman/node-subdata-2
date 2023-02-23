@@ -249,14 +249,7 @@ export default class DirectStream extends Emitter<DirectStreamEventArguments> {
             number: Math.min(255, Math.floor(size / sizeFn(4)) - 1),
             remainder: size - sizeFn(4) * (Math.min(255, Math.floor(size / sizeFn(4)) - 1) + 1)
         };
-        log(
-            "calculated control character data for size",
-            size,
-            "(using arbitrary units) and control character",
-            ControlCharacters[controlCharacter],
-            "as",
-            result
-        );
+        log("calculated control character data for size", size, "bytes and control character", ControlCharacters[controlCharacter], "as", result);
         return result;
     }
 
