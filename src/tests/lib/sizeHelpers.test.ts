@@ -1,6 +1,6 @@
 /*
  * node-subdata-2 - SubData 2 wrapper for Node.js
- * Copyright (C) 2022  LogN
+ * Copyright (C) 2022, 2023  LogN
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
