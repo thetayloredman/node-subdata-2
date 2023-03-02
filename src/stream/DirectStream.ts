@@ -41,7 +41,7 @@ export type DirectStreamEventArguments = {
      */
     [DirectStreamEvents.Read]: [ControlCharacters.ReadByte, 1, number] | [SizedControlCharacters, number, Buffer];
     /** Emitted when an End of Packet is received along with (size, data) parameters. */
-    [DirectStreamEvents.Packet]: [number, Buffer];
+    [DirectStreamEvents.Packet]: [Buffer];
 };
 
 /**
@@ -217,7 +217,7 @@ export default class DirectStream extends Emitter<DirectStreamEventArguments> {
     /** Called internally to clear and emit a packet. */
     private _emitPacket(): void {
         debug("triggering packet");
-        this.emit(DirectStreamEvents.Packet, this._packetSize, this._packet);
+        this.emit(DirectStreamEvents.Packet, this._packet);
         this._packet = Buffer.alloc(0);
         this._packetSize = 0;
     }

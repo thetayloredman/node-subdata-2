@@ -94,7 +94,7 @@ describe("Stream", () => {
 
         expect(onRead).not.toHaveBeenCalled();
         expect(onPacket).toHaveBeenCalledTimes(1);
-        expect(onPacket).toHaveBeenCalledWith(0, Buffer.alloc(0));
+        expect(onPacket).toHaveBeenCalledWith(Buffer.alloc(0));
         expect(onReset).not.toHaveBeenCalled();
     });
 
@@ -106,7 +106,7 @@ describe("Stream", () => {
         expect(onRead).toHaveBeenCalledTimes(1);
         expect(onRead).toHaveBeenCalledWith(ControlCharacters.ReadByte, 1, 1);
         expect(onPacket).toHaveBeenCalledTimes(1);
-        expect(onPacket).toHaveBeenCalledWith(1, Buffer.from([1]));
+        expect(onPacket).toHaveBeenCalledWith(Buffer.from([1]));
         expect(onReset).not.toHaveBeenCalled();
     });
 
@@ -157,7 +157,7 @@ describe("Stream", () => {
             Buffer.from([0x0, 0x1, 0x2, 0x3, 0x4, 0x5, 0x6, 0x7, 0x8, 0x9, 0xa, 0xb])
         );
         expect(onPacket).toHaveBeenCalledTimes(1);
-        expect(onPacket).toHaveBeenCalledWith(12, Buffer.from([0x0, 0x1, 0x2, 0x3, 0x4, 0x5, 0x6, 0x7, 0x8, 0x9, 0xa, 0xb]));
+        expect(onPacket).toHaveBeenCalledWith(Buffer.from([0x0, 0x1, 0x2, 0x3, 0x4, 0x5, 0x6, 0x7, 0x8, 0x9, 0xa, 0xb]));
         expect(onReset).not.toHaveBeenCalled();
     });
 
@@ -179,7 +179,7 @@ describe("Stream", () => {
             Buffer.from([0x0, 0x1, 0x2, 0x3, 0x4, 0x5, 0x6, 0x7, 0x8, 0x9, 0xa, 0xb])
         );
         expect(onPacket).toHaveBeenCalledTimes(1);
-        expect(onPacket).toHaveBeenCalledWith(12, Buffer.from([0x0, 0x1, 0x2, 0x3, 0x4, 0x5, 0x6, 0x7, 0x8, 0x9, 0xa, 0xb]));
+        expect(onPacket).toHaveBeenCalledWith(Buffer.from([0x0, 0x1, 0x2, 0x3, 0x4, 0x5, 0x6, 0x7, 0x8, 0x9, 0xa, 0xb]));
         expect(onReset).not.toHaveBeenCalled();
     });
 
@@ -201,7 +201,7 @@ describe("Stream", () => {
             Buffer.from([0x00, 0x01, 0x02, 0x03, 0x04, 0x05, 0x06, 0x07, 0x08, 0x09, 0x0a, 0x0b])
         );
         expect(onPacket).toHaveBeenCalledTimes(1);
-        expect(onPacket).toHaveBeenCalledWith(12, Buffer.from([0x00, 0x01, 0x02, 0x03, 0x04, 0x05, 0x06, 0x07, 0x08, 0x09, 0x0a, 0x0b]));
+        expect(onPacket).toHaveBeenCalledWith(Buffer.from([0x00, 0x01, 0x02, 0x03, 0x04, 0x05, 0x06, 0x07, 0x08, 0x09, 0x0a, 0x0b]));
         expect(onReset).not.toHaveBeenCalled();
     });
 
@@ -213,7 +213,7 @@ describe("Stream", () => {
         expect(onRead).toHaveBeenCalledTimes(1);
         expect(onRead).toHaveBeenCalledWith(ControlCharacters.ReadByte, 1, 0);
         expect(onPacket).toHaveBeenCalledTimes(1);
-        expect(onPacket).toHaveBeenCalledWith(0, Buffer.alloc(0));
+        expect(onPacket).toHaveBeenCalledWith(Buffer.alloc(0));
         expect(onReset).toHaveBeenCalledTimes(1);
         expect(onReset).toHaveBeenCalledWith();
     });

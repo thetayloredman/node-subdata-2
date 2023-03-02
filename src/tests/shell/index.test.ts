@@ -74,7 +74,7 @@ describe("Shell", () => {
         manual.write(Buffer.concat([direct.encode(data), Buffer.from([ControlCharacters.EndOfPacket])]));
 
         expect(localPacket).toBeCalledTimes(1);
-        expect(localPacket).toBeCalledWith(13, data);
+        expect(localPacket).toBeCalledWith(data);
     });
 
     describe("close", () => {

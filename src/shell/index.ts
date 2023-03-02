@@ -34,7 +34,7 @@ export enum ShellEvents {
     Close = "close"
 }
 export type ShellEventArguments = {
-    [ShellEvents.Packet]: [number, Buffer];
+    [ShellEvents.Packet]: [Buffer];
     [ShellEvents.Reset]: [];
     [ShellEvents.Close]: [];
 };
@@ -56,9 +56,9 @@ export default class Shell extends Emitter<ShellEventArguments> {
             log("forwarding close");
             this.emit(ShellEvents.Close);
         });
-        this._stream.on(StreamEvents.Packet, (size, packet) => {
+        this._stream.on(StreamEvents.Packet, (packet) => {
             log("forwarding+decoding packet", packet);
-            this.emit(ShellEvents.Packet, size, this._algorithm.decode(packet));
+            this.emit(ShellEvents.Packet, this._algorithm.decode(packet));
         });
     }
 

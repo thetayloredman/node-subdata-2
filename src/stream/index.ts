@@ -41,7 +41,7 @@ export type StreamEventArguments = {
     /**
      * Fired whenever an End Of Packet is received, with two parameters, size and data.
      */
-    [StreamEvents.Packet]: [number, Buffer];
+    [StreamEvents.Packet]: [Buffer];
     /**
      * Fired whenever the remote sends Read Reset.
      */
@@ -86,9 +86,9 @@ export default class Stream extends Emitter<StreamEventArguments> {
             log("forwarding read", data);
             this.emit(StreamEvents.Read, data instanceof Buffer ? data : Buffer.from([data]));
         });
-        this._stream.on(DirectStreamEvents.Packet, (size, data) => {
+        this._stream.on(DirectStreamEvents.Packet, (data) => {
             log("forwarding packet", data);
-            this.emit(StreamEvents.Packet, size, data);
+            this.emit(StreamEvents.Packet, data);
         });
         this._provider.on(IOProviderEvents.Close, () => {
             log("forwarding close");

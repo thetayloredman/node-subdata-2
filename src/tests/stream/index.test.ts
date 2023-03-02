@@ -122,7 +122,7 @@ describe("Stream", () => {
         );
 
         expect(onPacket).toBeCalledTimes(1);
-        expect(onPacket).toBeCalledWith(13, Buffer.from("Hello, World!"));
+        expect(onPacket).toBeCalledWith(Buffer.from("Hello, World!"));
     });
 
     it("emits Reset when a remote read reset is encountered and does discard the packet so far", () => {
@@ -164,7 +164,7 @@ describe("Stream", () => {
 
         expect(onReset).toBeCalledTimes(1);
         expect(onPacket).toBeCalledTimes(1);
-        expect(onPacket).toBeCalledWith(0, Buffer.alloc(0));
+        expect(onPacket).toBeCalledWith(Buffer.alloc(0));
         expect(onRead).toBeCalledTimes(2);
     });
 

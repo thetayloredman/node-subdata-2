@@ -58,7 +58,7 @@ export default class DumbClient extends Emitter<DumbClientEventArguments> {
             log("forwarding close");
             this.emit(DumbClientEvents.Close);
         });
-        this._shell.on(ShellEvents.Packet, (_size, data) => {
+        this._shell.on(ShellEvents.Packet, (data) => {
             log("forwarding packet", data);
             this.emit(DumbClientEvents.Packet, new Packet(data));
         });
