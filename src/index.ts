@@ -16,6 +16,7 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
+import { InitialProtocolPackets, ProtocolPackets, ProtocolStates } from "./client/states";
 import DumbClient, { DumbClientEventArguments, DumbClientEvents } from "./DumbClient";
 import { bytes, kb, mb } from "./lib/sizeHelpers.js";
 import Packet from "./Packet";
@@ -38,6 +39,7 @@ export {
     DumbClient,
     DumbClientEventArguments,
     DumbClientEvents,
+    InitialProtocolPackets,
     IOProvider,
     IOProviderEventArguments,
     IOProviderEvents,
@@ -45,6 +47,8 @@ export {
     ManualIOProvider,
     mb,
     Packet,
+    ProtocolPackets,
+    ProtocolStates,
     RawShellAlgorithm,
     Shell,
     ShellAlgorithm,
