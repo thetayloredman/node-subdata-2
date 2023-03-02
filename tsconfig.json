@@ -4,6 +4,7 @@
         "module": "esnext",
         "outDir": "./dist",
         "sourceMap": true,
+        "declaration": true,
         "strict": true,
         "moduleResolution": "node",
         "esModuleInterop": true,
