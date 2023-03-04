@@ -18,6 +18,8 @@
 
 import { Duplex, PassThrough } from "node:stream";
 
+type BufferEncoding = "ascii" | "utf8" | "utf-8" | "utf16le" | "ucs2" | "ucs-2" | "base64" | "base64url" | "latin1" | "binary" | "hex";
+
 /**
  * Two Duplex streams that pipe data to each-other, useful for testing.
  *
@@ -58,7 +60,7 @@ export default class ConnectedDuplex extends Duplex {
         });
     }
 
-    public _write(chunk: any, encoding: BufferEncoding, callback: (error?: Error | null | undefined) => void): void {
+    public _write(chunk: unknown, encoding: BufferEncoding, callback: (error?: Error | null | undefined) => void): void {
         if (!this._other)
             throw new Error("Incorrect usage of ConnectedDuplex detected -- use ConnectedDuplex.new() instead of new ConnectedDuplex()");
 
