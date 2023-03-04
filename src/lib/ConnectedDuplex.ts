@@ -67,11 +67,11 @@ export default class ConnectedDuplex extends Duplex {
 
     public _read() {
         const chunk = this._buffer.read();
-        if (chunk) return this.push(chunk);
-
-        this._buffer.once("readable", () => {
-            this._read();
-        });
+        if (chunk) this.push(chunk);
+        else
+            this._buffer.once("readable", () => {
+                this._read();
+            });
     }
 
     /**

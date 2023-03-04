@@ -18,6 +18,15 @@
 
 import ConnectedDuplex from "../../lib/ConnectedDuplex";
 
+function syncWrite(target: ConnectedDuplex, data: string): Promise<void> {
+    return new Promise((resolve, reject) => {
+        target.write(data, "utf-8", (err) => {
+            if (err) reject(err);
+            else resolve();
+        });
+    });
+}
+
 test("ConnectedDuplex", () => {
     const [a, b] = ConnectedDuplex.new();
 
@@ -30,7 +39,7 @@ test("ConnectedDuplex", () => {
     expect(b.read()).toBeNull();
 });
 
-test("flowing mode", () => {
+test("flowing mode", async () => {
     const [a, b] = ConnectedDuplex.new();
 
     const aData = jest.fn();
@@ -38,8 +47,8 @@ test("flowing mode", () => {
     a.on("data", aData);
     b.on("data", bData);
 
-    a.write("abc");
-    b.write("def");
+    await syncWrite(a, "abc");
+    await syncWrite(b, "def");
 
     expect(aData).toBeCalledTimes(1);
     expect(bData).toBeCalledTimes(1);
