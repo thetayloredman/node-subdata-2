@@ -16,7 +16,7 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-import type { Socket } from "node:net";
+import type { Duplex } from "node:stream";
 
 import debug from "debug";
 import { Emitter } from "strict-event-emitter";
@@ -61,7 +61,7 @@ export type StreamEventArguments = {
  */
 export default class Stream extends Emitter<StreamEventArguments> {
     /** The underlying socket that is serving this Stream */
-    private _socket: Socket;
+    private _socket: Duplex;
     /** The underlying DirectStream, responsible for encoding */
     private _stream: DirectStream;
 
@@ -69,7 +69,7 @@ export default class Stream extends Emitter<StreamEventArguments> {
      * Create a new Stream.
      * @param socket A network socket to use
      */
-    public constructor(socket: Socket) {
+    public constructor(socket: Duplex) {
         super();
         log("initializing");
         this._socket = socket;
