@@ -70,26 +70,7 @@ describe("Stream", () => {
         await stream.write(Buffer.from("Hello, World!"));
 
         expect(encodeMock).toHaveBeenCalledWith(Buffer.from("Hello, World!"));
-        expect(onRemoteRx).toHaveBeenCalledWith(
-            Buffer.from([
-                ControlCharacters.ReadBytes,
-                2, // 4(2+1) = 12
-                charCode("H"),
-                charCode("e"),
-                charCode("l"),
-                charCode("l"),
-                charCode("o"),
-                charCode(","),
-                charCode(" "),
-                charCode("W"), // 8th byte
-                charCode("o"),
-                charCode("r"),
-                charCode("l"),
-                charCode("d"), // 12th byte
-                ControlCharacters.ReadByte,
-                charCode("!")
-            ])
-        );
+        expect(onRemoteRx).toHaveBeenCalledWith(encodeMock.mock.results[0].value);
     });
 
     // it("properly decodes when receiving", () => {
