@@ -17,6 +17,7 @@
  */
 
 import ConnectedDuplex from "../../lib/ConnectedDuplex";
+import { writeTo } from "../../lib/promisifiedStreamHelpers";
 import Stream, { StreamEvents } from "../../stream";
 import { ControlCharacters } from "../../stream/controlCharacters";
 import DirectStream from "../../stream/DirectStream";
@@ -54,14 +55,12 @@ function makeNewStream(): {
 }
 
 const encodeMock = jest.spyOn(DirectStream.prototype, "encode");
+const feedMock = jest.spyOn(DirectStream.prototype, "feed");
 
 beforeEach(() => {
     encodeMock.mockClear();
+    feedMock.mockClear();
 });
-
-function charCode(char: string): number {
-    return char.charCodeAt(0);
-}
 
 describe("Stream", () => {
     it("properly encodes when writing", async () => {
@@ -73,34 +72,17 @@ describe("Stream", () => {
         expect(onRemoteRx).toHaveBeenCalledWith(encodeMock.mock.results[0].value);
     });
 
-    // it("properly decodes when receiving", () => {
-    //     const { manual, onPacket } = makeNewStream();
+    it("properly decodes when receiving", async () => {
+        const { remote, onPacket } = makeNewStream();
+        const direct = new DirectStream();
 
-    //     manual.write(
-    //         Buffer.from([
-    //             ControlCharacters.ReadBytes,
-    //             2, // 4(2+1) = 12
-    //             charCode("H"),
-    //             charCode("e"),
-    //             charCode("l"),
-    //             charCode("l"),
-    //             charCode("o"),
-    //             charCode(","),
-    //             charCode(" "),
-    //             charCode("W"), // 8th byte
-    //             charCode("o"),
-    //             charCode("r"),
-    //             charCode("l"),
-    //             charCode("d"), // 12th byte
-    //             ControlCharacters.ReadByte,
-    //             charCode("!"),
-    //             ControlCharacters.EndOfPacket
-    //         ])
-    //     );
+        await writeTo(remote, Buffer.concat([direct.encode(Buffer.from("Hello, World!")), Buffer.from([ControlCharacters.EndOfPacket])]));
 
-    //     expect(onPacket).toBeCalledTimes(1);
-    //     expect(onPacket).toBeCalledWith(Buffer.from("Hello, World!"));
-    // });
+        expect(feedMock).toBeCalledTimes(1);
+        expect(feedMock).toBeCalledWith(Buffer.concat([direct.encode(Buffer.from("Hello, World!")), Buffer.from([ControlCharacters.EndOfPacket])]));
+        expect(onPacket).toBeCalledTimes(1);
+        expect(onPacket).toBeCalledWith(Buffer.from("Hello, World!"));
+    });
 
     // it("emits Reset when a remote read reset is encountered and does discard the packet so far", () => {
     //     const { manual, onPacket, onRead, onReset } = makeNewStream();
