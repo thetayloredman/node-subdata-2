@@ -1,5 +1,5 @@
 /*
- * node-subdata-2 - SubData 2 wrapper for Node.js
+ * node-subdata-2 - SubData 2 client for Node.js
  * Copyright (C) 2022, 2023  LogN
  *
  * This program is free software: you can redistribute it and/or modify
@@ -16,7 +16,7 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-import { Writable } from "stream";
+import type { Writable } from "stream";
 
 // A variety of helper functions for working with streams in a promisified manner
 

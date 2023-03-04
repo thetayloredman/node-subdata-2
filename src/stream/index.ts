@@ -21,9 +21,9 @@ import type { Duplex } from "node:stream";
 import debug from "debug";
 import { Emitter } from "strict-event-emitter";
 
+import { writeTo } from "../lib/promisifiedStreamHelpers";
 import { ControlCharacters } from "./controlCharacters";
 import DirectStream, { DirectStreamEvents } from "./DirectStream";
-import { writeTo } from "../lib/promisifiedStreamHelpers";
 
 const log = debug("node-subdata-2:stream");
 
