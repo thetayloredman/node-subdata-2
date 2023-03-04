@@ -18,9 +18,9 @@
 
 import ConnectedDuplex from "../../lib/ConnectedDuplex";
 
-function syncWrite(target: ConnectedDuplex, data: string): Promise<void> {
+function syncWrite(target: ConnectedDuplex, data: string, encoding?: BufferEncoding): Promise<void> {
     return new Promise((resolve, reject) => {
-        target.write(data, "utf-8", (err) => {
+        target.write(data, encoding, (err) => {
             if (err) reject(err);
             else resolve();
         });
