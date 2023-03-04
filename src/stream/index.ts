@@ -23,6 +23,7 @@ import { Emitter } from "strict-event-emitter";
 
 import { ControlCharacters } from "./controlCharacters";
 import DirectStream, { DirectStreamEvents } from "./DirectStream";
+import { writeTo } from "../lib/promisifiedStreamHelpers";
 
 const log = debug("node-subdata-2:stream");
 
@@ -101,9 +102,9 @@ export default class Stream extends Emitter<StreamEventArguments> {
      * Note: You probably want {@link Stream.writePacket} instead.
      * @param data The data to write
      */
-    public write(data: Buffer): void {
+    public async write(data: Buffer): Promise<void> {
         log("writing", data);
-        this._socket.write(this._stream.encode(data));
+        return writeTo(this._socket, this._stream.encode(data));
     }
 
     /**

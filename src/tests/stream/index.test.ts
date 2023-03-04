@@ -64,10 +64,10 @@ function charCode(char: string): number {
 }
 
 describe("Stream", () => {
-    it("properly encodes when writing", () => {
+    it("properly encodes when writing", async () => {
         const { stream, onRemoteRx } = makeNewStream();
 
-        stream.write(Buffer.from("Hello, World!"));
+        await stream.write(Buffer.from("Hello, World!"));
 
         expect(encodeMock).toHaveBeenCalledWith(Buffer.from("Hello, World!"));
         expect(onRemoteRx).toHaveBeenCalledWith(

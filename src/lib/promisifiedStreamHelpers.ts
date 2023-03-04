@@ -16,32 +16,16 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-import ConnectedDuplex from "../../lib/ConnectedDuplex";
-import { writeTo } from "../../lib/promisifiedStreamHelpers";
+import { Writable } from "stream";
 
-test("ConnectedDuplex", () => {
-    const [a, b] = ConnectedDuplex.new();
+// A variety of helper functions for working with streams in a promisified manner
 
-    a.write("abc");
-    expect(b.read()).toEqual(Buffer.from("abc"));
-    b.write("def");
-    expect(a.read()).toEqual(Buffer.from("def"));
-
-    a.end();
-    expect(b.read()).toBeNull();
-});
-
-test("flowing mode", async () => {
-    const [a, b] = ConnectedDuplex.new();
-
-    const aData = jest.fn();
-    const bData = jest.fn();
-    a.on("data", aData);
-    b.on("data", bData);
-
-    await writeTo(a, "abc");
-    await writeTo(b, "def");
-
-    expect(aData).toBeCalledTimes(1);
-    expect(bData).toBeCalledTimes(1);
-});
+/** Async version of Writable#write() */
+export function writeTo(stream: Writable, chunk: unknown): Promise<void> {
+    return new Promise((resolve, reject) => {
+        stream.write(chunk, (err) => {
+            if (err) reject(err);
+            else resolve();
+        });
+    });
+}
