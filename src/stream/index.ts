@@ -16,13 +16,13 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
+import type { Socket } from "node:net";
+
 import debug from "debug";
 import { Emitter } from "strict-event-emitter";
 
 import { ControlCharacters } from "./controlCharacters";
 import DirectStream, { DirectStreamEvents } from "./DirectStream";
-import type IOProvider from "./providers/IOProvider";
-import { IOProviderEvents } from "./providers/IOProvider";
 
 const log = debug("node-subdata-2:stream");
 
@@ -60,21 +60,21 @@ export type StreamEventArguments = {
  * of "providers" allowing you to use the SubData protocol (and this library) over another type of connection.
  */
 export default class Stream extends Emitter<StreamEventArguments> {
-    /** The underlying provider that is serving this Stream */
-    private _provider: IOProvider;
+    /** The underlying socket that is serving this Stream */
+    private _socket: Socket;
     /** The underlying DirectStream, responsible for encoding */
     private _stream: DirectStream;
 
     /**
      * Create a new Stream.
-     * @param provider The provider to use for this Stream
+     * @param socket A network socket to use
      */
-    public constructor(provider: IOProvider) {
+    public constructor(socket: Socket) {
         super();
         log("initializing");
-        this._provider = provider;
+        this._socket = socket;
         this._stream = new DirectStream();
-        this._provider.on(IOProviderEvents.Data, (data) => {
+        this._socket.on("data", (data) => {
             log("feeding data", data);
             this._stream.feed(data);
         });
@@ -90,7 +90,7 @@ export default class Stream extends Emitter<StreamEventArguments> {
             log("forwarding packet", data);
             this.emit(StreamEvents.Packet, data);
         });
-        this._provider.on(IOProviderEvents.Close, () => {
+        this._socket.on("close", () => {
             log("forwarding close");
             this.emit(StreamEvents.Close);
         });
@@ -103,7 +103,7 @@ export default class Stream extends Emitter<StreamEventArguments> {
      */
     public write(data: Buffer): void {
         log("writing", data);
-        this._provider.write(this._stream.encode(data));
+        this._socket.write(this._stream.encode(data));
     }
 
     /**
@@ -112,7 +112,7 @@ export default class Stream extends Emitter<StreamEventArguments> {
      */
     public endPacket(): void {
         log("ending packet");
-        this._provider.write(Buffer.from([ControlCharacters.EndOfPacket]));
+        this._socket.write(Buffer.from([ControlCharacters.EndOfPacket]));
     }
 
     /**
@@ -121,7 +121,7 @@ export default class Stream extends Emitter<StreamEventArguments> {
      */
     public writePacket(data: Buffer): void {
         log("writing packet of", data);
-        this._provider.write(Buffer.concat([this._stream.encode(data), Buffer.from([ControlCharacters.EndOfPacket])]));
+        this._socket.write(Buffer.concat([this._stream.encode(data), Buffer.from([ControlCharacters.EndOfPacket])]));
     }
 
     /**
@@ -129,7 +129,7 @@ export default class Stream extends Emitter<StreamEventArguments> {
      */
     public readReset(): void {
         log("triggering read reset");
-        this._provider.write(Buffer.from([ControlCharacters.ReadReset]));
+        this._socket.write(Buffer.from([ControlCharacters.ReadReset]));
     }
 
     /**
@@ -137,6 +137,6 @@ export default class Stream extends Emitter<StreamEventArguments> {
      */
     public close(): void {
         log("triggering close");
-        this._provider.close();
+        this._socket.end();
     }
 }
