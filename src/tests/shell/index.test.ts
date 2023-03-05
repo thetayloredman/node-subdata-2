@@ -31,8 +31,8 @@ function makeNewShell(): {
     shell: Shell;
     remoteRx: jest.Mock;
     localPacket: jest.Mock;
-    localRxClose: jest.Mock;
-    remoteRxClose: jest.Mock;
+    localRxEnd: jest.Mock;
+    remoteRxEnd: jest.Mock;
 } {
     const algorithm = new RawShellAlgorithm();
     const provider = new ManualIOProvider();
@@ -42,15 +42,15 @@ function makeNewShell(): {
 
     const remoteRx = jest.fn();
     const localPacket = jest.fn();
-    const localRxClose = jest.fn();
-    const remoteRxClose = jest.fn();
+    const localRxEnd = jest.fn();
+    const remoteRxEnd = jest.fn();
 
     manual.on("data", remoteRx);
-    manual.on("close", remoteRxClose);
+    manual.on("close", remoteRxEnd);
     shell.on(ShellEvents.Packet, localPacket);
-    shell.on(ShellEvents.Close, localRxClose);
+    shell.on(ShellEvents.End, localRxEnd);
 
-    return { algorithm, provider, manual, stream, shell, remoteRx, localPacket, localRxClose, remoteRxClose };
+    return { algorithm, provider, manual, stream, shell, remoteRx, localPacket, localRxEnd, remoteRxEnd };
 }
 
 describe("Shell", () => {
@@ -79,19 +79,19 @@ describe("Shell", () => {
 
     describe("close", () => {
         it("from remote", () => {
-            const { manual, localRxClose } = makeNewShell();
+            const { manual, localRxEnd } = makeNewShell();
 
             manual.close();
 
-            expect(localRxClose).toBeCalledTimes(1);
+            expect(localRxEnd).toBeCalledTimes(1);
         });
 
         it("from local", () => {
-            const { shell, remoteRxClose } = makeNewShell();
+            const { shell, remoteRxEnd } = makeNewShell();
 
             shell.close();
 
-            expect(remoteRxClose).toBeCalledTimes(1);
+            expect(remoteRxEnd).toBeCalledTimes(1);
         });
     });
 });

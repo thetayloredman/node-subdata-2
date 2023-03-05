@@ -33,7 +33,7 @@ function makeNewDumbClient(): {
     provider: ManualIOProvider;
     onPacket: jest.Mock;
     manual: ManualIOProvider["manual"];
-    onClose: jest.Mock;
+    onEnd: jest.Mock;
     onRemoteRx: jest.Mock;
     onRemoteRxClose: jest.Mock;
 } {
@@ -45,16 +45,16 @@ function makeNewDumbClient(): {
     const client = new DumbClient(shell);
 
     const onPacket = jest.fn();
-    const onClose = jest.fn();
+    const onEnd = jest.fn();
     const onRemoteRx = jest.fn();
     const onRemoteRxClose = jest.fn();
 
     client.on(DumbClientEvents.Packet, onPacket);
-    client.on(DumbClientEvents.Close, onClose);
+    client.on(DumbClientEvents.End, onEnd);
     manual.on("close", onRemoteRxClose);
     manual.on("data", onRemoteRx);
 
-    return { client, stream, algorithm, shell, manual, provider, onPacket, onClose, onRemoteRx, onRemoteRxClose };
+    return { client, stream, algorithm, shell, manual, provider, onPacket, onEnd, onRemoteRx, onRemoteRxClose };
 }
 
 describe("DumbClient", () => {
@@ -90,11 +90,11 @@ describe("DumbClient", () => {
 
     describe("close", () => {
         it("from remote", () => {
-            const { manual, onClose } = makeNewDumbClient();
+            const { manual, onEnd } = makeNewDumbClient();
 
             manual.close();
 
-            expect(onClose).toBeCalledTimes(1);
+            expect(onEnd).toBeCalledTimes(1);
         });
         it("commanded", () => {
             const { client, onRemoteRxClose } = makeNewDumbClient();

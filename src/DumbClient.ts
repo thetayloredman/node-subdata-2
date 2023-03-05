@@ -29,13 +29,25 @@ const log = debug("node-subdata-2:DumbClient");
 export enum DumbClientEvents {
     /** A new packet is received */
     Packet = "packet",
-    /** The connection is closing */
-    Close = "close"
+    /**
+     * The connection is closing
+     * @deprecated The Close event is deprecated and will be removed in a future release. Use the End event instead.
+     */
+    // TODO: Remove this in a future release
+    // eslint-disable-next-line deprecation/deprecation
+    Close = "close",
+    End = "end"
 }
 
 export type DumbClientEventArguments = {
     [DumbClientEvents.Packet]: [Packet];
+    /*
+     * @deprecated The Close event is deprecated and will be removed in a future release. Use the End event instead.
+     */
+    // TODO: Remove this in a future release
+    // eslint-disable-next-line deprecation/deprecation
     [DumbClientEvents.Close]: [];
+    [DumbClientEvents.End]: [];
 };
 
 /**
@@ -54,9 +66,12 @@ export default class DumbClient extends Emitter<DumbClientEventArguments> {
         super();
         log("initializing");
         this._shell = shell;
-        this._shell.on(ShellEvents.Close, () => {
+        this._shell.on(ShellEvents.End, () => {
             log("forwarding close");
+            // TODO: Remove this in a future release
+            // eslint-disable-next-line deprecation/deprecation
             this.emit(DumbClientEvents.Close);
+            this.emit(DumbClientEvents.End);
         });
         this._shell.on(ShellEvents.Packet, (data) => {
             log("forwarding packet", data);
