@@ -29,3 +29,10 @@ export function writeTo(stream: Writable, chunk: unknown): Promise<void> {
         });
     });
 }
+
+/** Async version of Writable#end() */
+export function endStream(stream: Writable): Promise<void> {
+    return new Promise((resolve) => {
+        stream.end(resolve);
+    });
+}

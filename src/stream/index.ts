@@ -21,7 +21,7 @@ import type { Duplex } from "node:stream";
 import debug from "debug";
 import { Emitter } from "strict-event-emitter";
 
-import { writeTo } from "../lib/promisifiedStreamHelpers";
+import { endStream, writeTo } from "../lib/promisifiedStreamHelpers";
 import { ControlCharacters } from "./controlCharacters";
 import DirectStream, { DirectStreamEvents } from "./DirectStream";
 
@@ -111,33 +111,34 @@ export default class Stream extends Emitter<StreamEventArguments> {
      * Terminates the current packet.
      * Note: This is often easier performed in one write via {@link Stream.writePacket}.
      */
-    public endPacket(): void {
+    public async endPacket(): Promise<void> {
         log("ending packet");
-        this._socket.write(Buffer.from([ControlCharacters.EndOfPacket]));
+
+        return writeTo(this._socket, Buffer.from([ControlCharacters.EndOfPacket]));
     }
 
     /**
      * Write data and end the current packet. This is equivalent to calling {@link Stream.write} and {@link Stream.endPacket} in sequence,
      * however, this will send both in one single transmission, which is probably marginally more efficient.
      */
-    public writePacket(data: Buffer): void {
+    public async writePacket(data: Buffer): Promise<void> {
         log("writing packet of", data);
-        this._socket.write(Buffer.concat([this._stream.encode(data), Buffer.from([ControlCharacters.EndOfPacket])]));
+        return writeTo(this._socket, Buffer.concat([this._stream.encode(data), Buffer.from([ControlCharacters.EndOfPacket])]));
     }
 
     /**
      * Trigger a read reset and tell the remote server to discard all data.
      */
-    public readReset(): void {
+    public async readReset(): Promise<void> {
         log("triggering read reset");
-        this._socket.write(Buffer.from([ControlCharacters.ReadReset]));
+        return writeTo(this._socket, Buffer.from([ControlCharacters.ReadReset]));
     }
 
     /**
      * Close the connection
      */
-    public close(): void {
+    public async close(): Promise<void> {
         log("triggering close");
-        this._socket.end();
+        return endStream(this._socket);
     }
 }

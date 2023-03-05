@@ -17,7 +17,7 @@
  */
 
 import ConnectedDuplex from "../../lib/ConnectedDuplex";
-import { writeTo } from "../../lib/promisifiedStreamHelpers";
+import { endStream, writeTo } from "../../lib/promisifiedStreamHelpers";
 import Stream, { StreamEvents } from "../../stream";
 import { ControlCharacters } from "../../stream/controlCharacters";
 import DirectStream from "../../stream/DirectStream";
@@ -54,6 +54,10 @@ function makeNewStream(): {
     return { local, remote, stream, onPacket, onReset, onRead, onRemoteRxClose, onRemoteRx, onLocalRxClose };
 }
 
+function charCode(char: string): number {
+    return char.charCodeAt(0);
+}
+
 const encodeMock = jest.spyOn(DirectStream.prototype, "encode");
 const feedMock = jest.spyOn(DirectStream.prototype, "feed");
 
@@ -76,103 +80,87 @@ describe("Stream", () => {
         const { remote, onPacket } = makeNewStream();
         const direct = new DirectStream();
 
-        await writeTo(remote, Buffer.concat([direct.encode(Buffer.from("Hello, World!")), Buffer.from([ControlCharacters.EndOfPacket])]));
+        const data = Buffer.concat([direct.encode(Buffer.from("Hello, World!")), Buffer.from([ControlCharacters.EndOfPacket])]);
+
+        await writeTo(remote, data);
 
         expect(feedMock).toBeCalledTimes(1);
-        expect(feedMock).toBeCalledWith(Buffer.concat([direct.encode(Buffer.from("Hello, World!")), Buffer.from([ControlCharacters.EndOfPacket])]));
+        expect(feedMock).toBeCalledWith(data);
         expect(onPacket).toBeCalledTimes(1);
         expect(onPacket).toBeCalledWith(Buffer.from("Hello, World!"));
     });
 
-    // it("emits Reset when a remote read reset is encountered and does discard the packet so far", () => {
-    //     const { manual, onPacket, onRead, onReset } = makeNewStream();
+    it("emits Reset when a remote read reset is encountered and does discard the packet so far", async () => {
+        const { remote, onPacket, onRead, onReset } = makeNewStream();
+        const direct = new DirectStream();
 
-    //     manual.write(
-    //         Buffer.from([
-    //             ControlCharacters.ReadBytes,
-    //             2, // 4(2+1) = 12
-    //             charCode("H"),
-    //             charCode("e"),
-    //             charCode("l"),
-    //             charCode("l"),
-    //             charCode("o"),
-    //             charCode(","),
-    //             charCode(" "),
-    //             charCode("W"), // 8th byte
-    //             charCode("o"),
-    //             charCode("r"),
-    //             charCode("l"),
-    //             charCode("d"), // 12th byte
-    //             ControlCharacters.ReadByte,
-    //             charCode("!")
-    //         ])
-    //     );
+        await writeTo(remote, direct.encode(Buffer.from("Hello, World!")));
 
-    //     expect(onPacket).toBeCalledTimes(0);
-    //     expect(onRead).toBeCalledTimes(2);
-    //     expect(onRead).toHaveBeenNthCalledWith(1, Buffer.from("Hello, World"));
-    //     expect(onRead).toHaveBeenNthCalledWith(2, Buffer.from("!"));
+        expect(onPacket).toBeCalledTimes(0);
+        expect(onRead).toBeCalledTimes(2);
+        expect(onRead).toHaveBeenNthCalledWith(1, Buffer.from("Hello, World"));
+        expect(onRead).toHaveBeenNthCalledWith(2, Buffer.from("!"));
 
-    //     manual.write(Buffer.from([ControlCharacters.ReadReset]));
+        await writeTo(remote, Buffer.from([ControlCharacters.ReadReset]));
 
-    //     expect(onReset).toBeCalledTimes(1);
-    //     expect(onPacket).toBeCalledTimes(0);
-    //     expect(onRead).toBeCalledTimes(2);
+        expect(onReset).toBeCalledTimes(1);
+        expect(onPacket).toBeCalledTimes(0);
+        expect(onRead).toBeCalledTimes(2);
 
-    //     manual.write(Buffer.from([ControlCharacters.EndOfPacket]));
+        await writeTo(remote, Buffer.from([ControlCharacters.EndOfPacket]));
 
-    //     expect(onReset).toBeCalledTimes(1);
-    //     expect(onPacket).toBeCalledTimes(1);
-    //     expect(onPacket).toBeCalledWith(Buffer.alloc(0));
-    //     expect(onRead).toBeCalledTimes(2);
-    // });
+        expect(onReset).toBeCalledTimes(1);
+        expect(onPacket).toBeCalledTimes(1);
+        expect(onPacket).toBeCalledWith(Buffer.alloc(0));
+        expect(onRead).toBeCalledTimes(2);
+    });
 
-    // it("can terminate packets", () => {
-    //     const { stream, onRemoteReceiveData } = makeNewStream();
+    it("can terminate packets", async () => {
+        const { stream, onRemoteRx } = makeNewStream();
 
-    //     stream.write(Buffer.from("A"));
-    //     stream.endPacket();
+        await stream.write(Buffer.from("A"));
+        await stream.endPacket();
 
-    //     expect(onRemoteReceiveData).toBeCalledTimes(2);
-    //     expect(onRemoteReceiveData).toHaveBeenNthCalledWith(1, Buffer.from([ControlCharacters.ReadByte, charCode("A")]));
-    //     expect(onRemoteReceiveData).toHaveBeenNthCalledWith(2, Buffer.from([ControlCharacters.EndOfPacket]));
-    // });
+        expect(onRemoteRx).toBeCalledTimes(2);
+        expect(onRemoteRx).toHaveBeenNthCalledWith(1, Buffer.from([ControlCharacters.ReadByte, charCode("A")]));
+        expect(onRemoteRx).toHaveBeenNthCalledWith(2, Buffer.from([ControlCharacters.EndOfPacket]));
+    });
 
-    // it("writePacket will also do the same thing", () => {
-    //     const { stream, onRemoteReceiveData } = makeNewStream();
+    it("writePacket will also do the same thing", async () => {
+        const { stream, onRemoteRx } = makeNewStream();
 
-    //     stream.writePacket(Buffer.from("A"));
+        await stream.writePacket(Buffer.from("A"));
 
-    //     expect(onRemoteReceiveData).toBeCalledTimes(1);
-    //     expect(onRemoteReceiveData).toHaveBeenCalledWith(Buffer.from([ControlCharacters.ReadByte, charCode("A"), ControlCharacters.EndOfPacket]));
-    // });
+        expect(onRemoteRx).toBeCalledTimes(1);
+        expect(onRemoteRx).toHaveBeenCalledWith(Buffer.from([ControlCharacters.ReadByte, charCode("A"), ControlCharacters.EndOfPacket]));
+    });
 
-    // it("can transmit read reset", () => {
-    //     const { stream, onRemoteReceiveData } = makeNewStream();
+    it("can transmit read reset", async () => {
+        const { stream, onRemoteRx } = makeNewStream();
 
-    //     stream.write(Buffer.from("A"));
-    //     stream.readReset();
+        await stream.write(Buffer.from("A"));
+        await stream.readReset();
 
-    //     expect(onRemoteReceiveData).toBeCalledTimes(2);
-    //     expect(onRemoteReceiveData).toHaveBeenNthCalledWith(1, Buffer.from([ControlCharacters.ReadByte, charCode("A")]));
-    //     expect(onRemoteReceiveData).toHaveBeenNthCalledWith(2, Buffer.from([ControlCharacters.ReadReset]));
-    // });
+        expect(onRemoteRx).toBeCalledTimes(2);
+        expect(onRemoteRx).toHaveBeenNthCalledWith(1, Buffer.from([ControlCharacters.ReadByte, charCode("A")]));
+        expect(onRemoteRx).toHaveBeenNthCalledWith(2, Buffer.from([ControlCharacters.ReadReset]));
+    });
 
-    // describe("close", () => {
-    //     it("received from remote", () => {
-    //         const { manual, onClose } = makeNewStream();
+    describe("close", () => {
+        it("received from remote", async () => {
+            const { remote, onLocalRxClose } = makeNewStream();
 
-    //         manual.close();
+            await endStream(remote);
 
-    //         expect(onClose).toBeCalledTimes(1);
-    //     });
+            expect(onLocalRxClose).toBeCalledTimes(1);
+        });
 
-    //     it("sent from local", () => {
-    //         const { stream, onRemoteReceiveClose } = makeNewStream();
+        it("sent from local", async () => {
+            const { stream, onRemoteRxClose } = makeNewStream();
 
-    //         stream.close();
+            await stream.close();
 
-    //         expect(onRemoteReceiveClose).toBeCalledTimes(1);
-    //     });
-    // });
+            expect(onRemoteRxClose).toBeCalledTimes(1);
+        });
+    });
 });
