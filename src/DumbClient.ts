@@ -82,14 +82,14 @@ export default class DumbClient extends Emitter<DumbClientEventArguments> {
     /**
      * Terminate the TCP level of the connection. This does not send the disconnect packets.
      */
-    public close() {
+    public async close(): Promise<void> {
         log("triggering close");
-        this._shell.close();
+        return this._shell.close();
     }
 
     /** Send a {@link Packet} over the stream. */
-    public send(data: Packet) {
+    public async send(data: Packet): Promise<void> {
         log("sending packet", data);
-        this._shell.send(data.toRaw());
+        return this._shell.send(data.toRaw());
     }
 }

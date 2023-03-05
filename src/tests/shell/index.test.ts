@@ -66,11 +66,11 @@ beforeEach(() => {
 });
 
 describe("Shell", () => {
-    it("simple transmit", () => {
+    it("simple transmit", async () => {
         const { shell } = makeNewShell();
         const data = Buffer.from("Hello, world!");
 
-        shell.send(data);
+        await shell.send(data);
 
         expect(mockRawShellAlgorithmEncode).toBeCalledTimes(1);
         expect(mockRawShellAlgorithmEncode).toBeCalledWith(data);

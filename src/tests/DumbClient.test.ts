@@ -90,12 +90,12 @@ describe("DumbClient", () => {
         expect(onPacket).toBeCalledWith(new Packet(ActualPacket.fromID(0xaabb, Buffer.from([0xcc, 0xdd])).toRaw()));
     });
 
-    it("local tx is transmitted as expected", () => {
+    it("local tx is transmitted as expected", async () => {
         const { client } = makeNewDumbClient();
 
         const packet = new Packet(ActualPacket.fromID(0xffff, Buffer.from("Hello, World!")).toRaw());
 
-        client.send(packet);
+        await client.send(packet);
 
         expect(mockPacketToRaw).toBeCalledTimes(1);
         expect(mockShellSend).toBeCalledTimes(1);
@@ -110,10 +110,10 @@ describe("DumbClient", () => {
 
             expect(onEnd).toBeCalledTimes(1);
         });
-        it("commanded", () => {
+        it("commanded", async () => {
             const { client } = makeNewDumbClient();
 
-            client.close();
+            await client.close();
 
             expect(mockShellClose).toBeCalledTimes(1);
         });

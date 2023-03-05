@@ -79,14 +79,14 @@ export default class Shell extends Emitter<ShellEventArguments> {
     }
 
     /** Send a packet. */
-    public send(data: Buffer): void {
+    public async send(data: Buffer): Promise<void> {
         log("encoding+sending packet", data);
-        this._stream.writePacket(this._algorithm.encode(data));
+        return this._stream.writePacket(this._algorithm.encode(data));
     }
 
     /** Close the underlying connection. */
-    public close(): void {
+    public async close(): Promise<void> {
         log("closing");
-        this._stream.close();
+        return this._stream.close();
     }
 }
