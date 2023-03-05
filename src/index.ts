@@ -26,9 +26,6 @@ import ShellAlgorithm from "./shell/algorithms/ShellAlgorithm.js";
 import Stream, { StreamEventArguments, StreamEvents } from "./stream/";
 import { ControlCharacters, SizedControlCharacters } from "./stream/controlCharacters.js";
 import DirectStream, { DirectStreamEventArguments, DirectStreamEvents } from "./stream/DirectStream.js";
-import IOProvider, { IOProviderEventArguments, IOProviderEvents } from "./stream/providers/IOProvider.js";
-import ManualIOProvider from "./stream/providers/ManualIOProvider.js";
-import TCPIOProvider from "./stream/providers/TCPIOProvider.js";
 
 export {
     bytes,
@@ -40,11 +37,7 @@ export {
     DumbClientEventArguments,
     DumbClientEvents,
     InitialProtocolPackets,
-    IOProvider,
-    IOProviderEventArguments,
-    IOProviderEvents,
     kb,
-    ManualIOProvider,
     mb,
     Packet,
     ProtocolPackets,
@@ -57,6 +50,5 @@ export {
     SizedControlCharacters,
     Stream,
     StreamEventArguments,
-    StreamEvents,
-    TCPIOProvider
+    StreamEvents
 };

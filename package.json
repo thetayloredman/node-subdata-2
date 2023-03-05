@@ -16,6 +16,7 @@
         "prepare": "yarn run husky && yarn run docs",
         "lint-staged": "lint-staged",
         "lint": "eslint .",
+        "lint:warnings_as_errors": "eslint --max-warnings=0 .",
         "test:staged": "npx lint-staged",
         "githook:commit-msg": "yarn run commitlint --edit",
         "githook:pre-commit": "yarn run test:staged && yarn run build && yarn run test",

@@ -16,13 +16,14 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
+import type { Duplex } from "node:stream";
+
 import debug from "debug";
 import { Emitter } from "strict-event-emitter";
 
+import { endStream, writeTo } from "../lib/promisifiedStreamHelpers";
 import { ControlCharacters } from "./controlCharacters";
 import DirectStream, { DirectStreamEvents } from "./DirectStream";
-import type IOProvider from "./providers/IOProvider";
-import { IOProviderEvents } from "./providers/IOProvider";
 
 const log = debug("node-subdata-2:stream");
 
@@ -30,7 +31,11 @@ export enum StreamEvents {
     Read = "read",
     Packet = "packet",
     Reset = "reset",
-    Close = "close"
+    /**
+     * @deprecated The Close event is deprecated and will be removed in a future release. Use the End event instead.
+     */
+    Close = "close",
+    End = "end"
 }
 
 export type StreamEventArguments = {
@@ -48,8 +53,15 @@ export type StreamEventArguments = {
     [StreamEvents.Reset]: [];
     /**
      * Fired when the connection is closing.
+     * @deprecated The Close event is deprecated and will be removed in a future release. Use the End event instead.
      */
+    // TODO: Remove this in a future release
+    // eslint-disable-next-line deprecation/deprecation
     [StreamEvents.Close]: [];
+    /**
+     * Fired when the underlying Duplex triggers the 'end' event.
+     */
+    [StreamEvents.End]: [];
 };
 
 /**
@@ -60,21 +72,21 @@ export type StreamEventArguments = {
  * of "providers" allowing you to use the SubData protocol (and this library) over another type of connection.
  */
 export default class Stream extends Emitter<StreamEventArguments> {
-    /** The underlying provider that is serving this Stream */
-    private _provider: IOProvider;
+    /** The underlying socket that is serving this Stream */
+    private _socket: Duplex;
     /** The underlying DirectStream, responsible for encoding */
     private _stream: DirectStream;
 
     /**
      * Create a new Stream.
-     * @param provider The provider to use for this Stream
+     * @param socket A network socket to use
      */
-    public constructor(provider: IOProvider) {
+    public constructor(socket: Duplex) {
         super();
         log("initializing");
-        this._provider = provider;
+        this._socket = socket;
         this._stream = new DirectStream();
-        this._provider.on(IOProviderEvents.Data, (data) => {
+        this._socket.on("data", (data) => {
             log("feeding data", data);
             this._stream.feed(data);
         });
@@ -90,9 +102,12 @@ export default class Stream extends Emitter<StreamEventArguments> {
             log("forwarding packet", data);
             this.emit(StreamEvents.Packet, data);
         });
-        this._provider.on(IOProviderEvents.Close, () => {
+        this._socket.on("end", () => {
             log("forwarding close");
+            // TODO: Remove this in a future release
+            // eslint-disable-next-line deprecation/deprecation
             this.emit(StreamEvents.Close);
+            this.emit(StreamEvents.End);
         });
     }
 
@@ -101,42 +116,43 @@ export default class Stream extends Emitter<StreamEventArguments> {
      * Note: You probably want {@link Stream.writePacket} instead.
      * @param data The data to write
      */
-    public write(data: Buffer): void {
+    public async write(data: Buffer): Promise<void> {
         log("writing", data);
-        this._provider.write(this._stream.encode(data));
+        return writeTo(this._socket, this._stream.encode(data));
     }
 
     /**
      * Terminates the current packet.
      * Note: This is often easier performed in one write via {@link Stream.writePacket}.
      */
-    public endPacket(): void {
+    public async endPacket(): Promise<void> {
         log("ending packet");
-        this._provider.write(Buffer.from([ControlCharacters.EndOfPacket]));
+
+        return writeTo(this._socket, Buffer.from([ControlCharacters.EndOfPacket]));
     }
 
     /**
      * Write data and end the current packet. This is equivalent to calling {@link Stream.write} and {@link Stream.endPacket} in sequence,
      * however, this will send both in one single transmission, which is probably marginally more efficient.
      */
-    public writePacket(data: Buffer): void {
+    public async writePacket(data: Buffer): Promise<void> {
         log("writing packet of", data);
-        this._provider.write(Buffer.concat([this._stream.encode(data), Buffer.from([ControlCharacters.EndOfPacket])]));
+        return writeTo(this._socket, Buffer.concat([this._stream.encode(data), Buffer.from([ControlCharacters.EndOfPacket])]));
     }
 
     /**
      * Trigger a read reset and tell the remote server to discard all data.
      */
-    public readReset(): void {
+    public async readReset(): Promise<void> {
         log("triggering read reset");
-        this._provider.write(Buffer.from([ControlCharacters.ReadReset]));
+        return writeTo(this._socket, Buffer.from([ControlCharacters.ReadReset]));
     }
 
     /**
      * Close the connection
      */
-    public close(): void {
+    public async close(): Promise<void> {
         log("triggering close");
-        this._provider.close();
+        return endStream(this._socket);
     }
 }
