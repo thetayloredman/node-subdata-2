@@ -31,7 +31,11 @@ export enum StreamEvents {
     Read = "read",
     Packet = "packet",
     Reset = "reset",
-    Close = "close"
+    /**
+     * @deprecated The Close event is deprecated and will be removed in a future release. Use the End event instead.
+     */
+    Close = "close",
+    End = "end"
 }
 
 export type StreamEventArguments = {
@@ -49,8 +53,15 @@ export type StreamEventArguments = {
     [StreamEvents.Reset]: [];
     /**
      * Fired when the connection is closing.
+     * @deprecated The Close event is deprecated and will be removed in a future release. Use the End event instead.
      */
+    // TODO: Remove this in a future release
+    // eslint-disable-next-line deprecation/deprecation
     [StreamEvents.Close]: [];
+    /**
+     * Fired when the underlying Duplex triggers the 'end' event.
+     */
+    [StreamEvents.End]: [];
 };
 
 /**
@@ -91,9 +102,12 @@ export default class Stream extends Emitter<StreamEventArguments> {
             log("forwarding packet", data);
             this.emit(StreamEvents.Packet, data);
         });
-        this._socket.on("close", () => {
+        this._socket.on("end", () => {
             log("forwarding close");
+            // TODO: Remove this in a future release
+            // eslint-disable-next-line deprecation/deprecation
             this.emit(StreamEvents.Close);
+            this.emit(StreamEvents.End);
         });
     }
 

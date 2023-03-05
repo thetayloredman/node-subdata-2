@@ -30,28 +30,28 @@ function makeNewStream(): {
     onPacket: jest.Mock;
     onReset: jest.Mock;
     onRead: jest.Mock;
-    onRemoteRxClose: jest.Mock;
+    onRemoteRxEnd: jest.Mock;
     onRemoteRx: jest.Mock;
-    onLocalRxClose: jest.Mock;
+    onLocalRxEnd: jest.Mock;
 } {
     const [local, remote] = ConnectedDuplex.new();
     const stream = new Stream(local);
 
     const onRemoteRx = jest.fn();
-    const onRemoteRxClose = jest.fn();
-    const onLocalRxClose = jest.fn();
+    const onRemoteRxEnd = jest.fn();
+    const onLocalRxEnd = jest.fn();
     const onReset = jest.fn();
     const onPacket = jest.fn();
     const onRead = jest.fn();
 
     remote.on("data", onRemoteRx);
-    remote.on("close", onRemoteRxClose);
-    stream.on(StreamEvents.Close, onLocalRxClose);
+    remote.on("end", onRemoteRxEnd);
+    stream.on(StreamEvents.End, onLocalRxEnd);
     stream.on(StreamEvents.Reset, onReset);
     stream.on(StreamEvents.Packet, onPacket);
     stream.on(StreamEvents.Read, onRead);
 
-    return { local, remote, stream, onPacket, onReset, onRead, onRemoteRxClose, onRemoteRx, onLocalRxClose };
+    return { local, remote, stream, onPacket, onReset, onRead, onRemoteRxEnd, onRemoteRx, onLocalRxEnd };
 }
 
 function charCode(char: string): number {
@@ -148,19 +148,19 @@ describe("Stream", () => {
 
     describe("close", () => {
         it("received from remote", async () => {
-            const { remote, onLocalRxClose } = makeNewStream();
+            const { remote, onLocalRxEnd } = makeNewStream();
 
             await endStream(remote);
 
-            expect(onLocalRxClose).toBeCalledTimes(1);
+            expect(onLocalRxEnd).toBeCalledTimes(1);
         });
 
         it("sent from local", async () => {
-            const { stream, onRemoteRxClose } = makeNewStream();
+            const { stream, onRemoteRxEnd } = makeNewStream();
 
             await stream.close();
 
-            expect(onRemoteRxClose).toBeCalledTimes(1);
+            expect(onRemoteRxEnd).toBeCalledTimes(1);
         });
     });
 });
