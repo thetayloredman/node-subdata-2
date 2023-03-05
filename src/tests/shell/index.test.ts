@@ -17,21 +17,18 @@
  */
 
 import ConnectedDuplex from "../../lib/ConnectedDuplex";
-import { endStream } from "../../lib/promisifiedStreamHelpers";
 import Shell, { ShellEvents } from "../../shell";
 import RawShellAlgorithm from "../../shell/algorithms/Raw";
 import Stream, { StreamEvents } from "../../stream";
 
 function makeNewShell(): {
-    local: ConnectedDuplex;
-    remote: ConnectedDuplex;
-    algorithm: RawShellAlgorithm;
     stream: Stream;
     shell: Shell;
     localPacket: jest.Mock;
     localRxEnd: jest.Mock;
 } {
-    const [local, remote] = ConnectedDuplex.new();
+    // Only exists for type-compatibility reasons
+    const [local, _] = ConnectedDuplex.new();
     const algorithm = new RawShellAlgorithm();
     const stream = new Stream(local);
     const shell = new Shell(algorithm, stream);
@@ -42,7 +39,7 @@ function makeNewShell(): {
     shell.on(ShellEvents.Packet, localPacket);
     shell.on(ShellEvents.End, localRxEnd);
 
-    return { local, remote, algorithm, stream, shell, localPacket, localRxEnd };
+    return { stream, shell, localPacket, localRxEnd };
 }
 
 // The RawShellAlgorithm works fine as a mock algorithm.
@@ -52,20 +49,20 @@ const mockRawShellAlgorithmDecode = jest.spyOn(RawShellAlgorithm.prototype, "dec
 // We also mock the Stream itself.
 jest.mock("../../stream");
 const MockedStream = Stream as jest.MockedClass<typeof Stream>;
-const mockWritePacket = jest.fn(() => Promise.resolve());
-const mockClose = jest.fn(() => Promise.resolve());
+const mockStreamWritePacket = jest.fn(() => Promise.resolve());
+const mockStreamClose = jest.fn(() => Promise.resolve());
 MockedStream.mockImplementation((...args) => {
     return new (class extends (jest.requireActual("../../stream").default as typeof Stream) {
-        public writePacket = mockWritePacket;
-        public close = mockClose;
+        public writePacket = mockStreamWritePacket;
+        public close = mockStreamClose;
     })(...args);
 });
 
 beforeEach(() => {
     mockRawShellAlgorithmEncode.mockClear();
     mockRawShellAlgorithmDecode.mockClear();
-    mockWritePacket.mockClear();
-    mockClose.mockClear();
+    mockStreamWritePacket.mockClear();
+    mockStreamClose.mockClear();
 });
 
 describe("Shell", () => {
@@ -77,8 +74,8 @@ describe("Shell", () => {
 
         expect(mockRawShellAlgorithmEncode).toBeCalledTimes(1);
         expect(mockRawShellAlgorithmEncode).toBeCalledWith(data);
-        expect(mockWritePacket).toBeCalledTimes(1);
-        expect(mockWritePacket).toBeCalledWith(mockRawShellAlgorithmEncode.mock.results[0].value);
+        expect(mockStreamWritePacket).toBeCalledTimes(1);
+        expect(mockStreamWritePacket).toBeCalledWith(mockRawShellAlgorithmEncode.mock.results[0].value);
     });
 
     it("simple receive", () => {
@@ -96,9 +93,9 @@ describe("Shell", () => {
 
     describe("close", () => {
         it("from remote", async () => {
-            const { remote, localRxEnd } = makeNewShell();
+            const { stream, localRxEnd } = makeNewShell();
 
-            await endStream(remote);
+            stream.emit(StreamEvents.End);
 
             expect(localRxEnd).toBeCalledTimes(1);
         });
@@ -108,7 +105,7 @@ describe("Shell", () => {
 
             await shell.close();
 
-            expect(mockClose).toBeCalledTimes(1);
+            expect(mockStreamClose).toBeCalledTimes(1);
         });
     });
 });
