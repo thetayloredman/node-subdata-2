@@ -3254,6 +3254,13 @@ __metadata:
   languageName: node
   linkType: hard
 
+"command-exists@npm:^1.2.9":
+  version: 1.2.9
+  resolution: "command-exists@npm:1.2.9"
+  checksum: 729ae3d88a2058c93c58840f30341b7f82688a573019535d198b57a4d8cb0135ced0ad7f52b591e5b28a90feb2c675080ce916e56254a0f7c15cb2395277cac3
+  languageName: node
+  linkType: hard
+
 "commander@npm:^9.4.1":
   version: 9.5.0
   resolution: "commander@npm:9.5.0"
@@ -7930,6 +7937,7 @@ __metadata:
     strict-event-emitter: ^0.4.6
     typedoc: ^0.23.23
     typescript: ^4.9.4
+    yarpm: ^1.2.0
   languageName: unknown
   linkType: soft
 
@@ -8647,6 +8655,20 @@ __metadata:
     y18n: ^5.0.5
     yargs-parser: ^21.1.1
   checksum: 3d8a43c336a4942bc68080768664aca85c7bd406f018bad362fd255c41c8f4e650277f42fd65d543fce99e084124ddafee7bbfc1a5c6a8fda4cec78609dcf8d4
+  languageName: node
+  linkType: hard
+
+"yarpm@npm:^1.2.0":
+  version: 1.2.0
+  resolution: "yarpm@npm:1.2.0"
+  dependencies:
+    command-exists: ^1.2.9
+    cross-spawn: ^7.0.3
+  bin:
+    yarpm: bin/yarpm.js
+    yarpm-pnpm: bin/yarpm-pnpm.js
+    yarpm-yarn: bin/yarpm-yarn.js
+  checksum: 77d37cf5efa14bbe3b1568d295f198c51e890d9e6ae18029463a73eed29dba60785fd9286cc47b1b4237ec2f55bd66c60e6fe4cbe69a62f35bcb784c06df682e
   languageName: node
   linkType: hard
 
