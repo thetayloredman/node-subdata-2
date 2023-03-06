@@ -30,6 +30,7 @@ import DirectStream, { DirectStreamEventArguments, DirectStreamEvents } from "./
 export {
     bytes,
     ControlCharacters,
+    // eslint-disable-next-line deprecation/deprecation
     DirectStream,
     DirectStreamEventArguments,
     DirectStreamEvents,
