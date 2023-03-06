@@ -84,7 +84,7 @@
             "prettier --write"
         ]
     },
-    "packageManager": "yarn@3.4.1",
+    "packageManager": "yarn@1.22.19",
     "dependencies": {
         "debug": "^4.3.4",
         "strict-event-emitter": "^0.4.6"
