@@ -7,19 +7,19 @@
     "scripts": {
         "clean": "rm -rf dist/",
         "tsc": "tsc",
-        "build": "yarpm run clean; yarpm run tsc",
+        "build": "yarn run clean; yarn run tsc",
         "start": "echo \"This is a damned module, not a program!\" && exit 1",
         "prettier": "prettier . -w",
         "prettier:check": "prettier . --check",
         "test": "jest",
         "husky": "husky install",
-        "prepare": "yarpm install && yarpm run husky && yarpm run docs",
+        "prepare": "yarn run husky && yarn run docs",
         "lint-staged": "lint-staged",
         "lint": "eslint .",
         "lint:warnings_as_errors": "eslint --max-warnings=0 .",
         "test:staged": "npx lint-staged",
-        "githook:commit-msg": "yarpm run commitlint --edit",
-        "githook:pre-commit": "yarpm run test:staged && yarpm run build && yarpm run test",
+        "githook:commit-msg": "yarn run commitlint --edit",
+        "githook:pre-commit": "yarn run test:staged && yarn run build && yarn run test",
         "docs": "typedoc",
         "np": "np"
     },
@@ -63,8 +63,7 @@
         "np": "^7.6.3",
         "prettier": "^2.8.1",
         "typedoc": "^0.23.23",
-        "typescript": "^4.9.4",
-        "yarpm": "^1.2.0"
+        "typescript": "^4.9.4"
     },
     "lint-staged": {
         "*.ts": [
