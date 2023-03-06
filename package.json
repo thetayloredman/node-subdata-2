@@ -23,6 +23,9 @@
         "docs": "typedoc",
         "np": "np"
     },
+    "files": [
+        "dist/"
+    ],
     "repository": {
         "type": "git",
         "url": "git+https://github.com/thetayloredman/node-subdata-2.git"
