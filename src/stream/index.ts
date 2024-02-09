@@ -32,10 +32,6 @@ export enum StreamEvents {
     Read = "read",
     Packet = "packet",
     Reset = "reset",
-    /**
-     * @deprecated The Close event is deprecated and will be removed in a future release. Use the End event instead.
-     */
-    Close = "close",
     End = "end"
 }
 
@@ -52,13 +48,6 @@ export type StreamEventArguments = {
      * Fired whenever the remote sends Read Reset.
      */
     [StreamEvents.Reset]: [];
-    /**
-     * Fired when the connection is closing.
-     * @deprecated The Close event is deprecated and will be removed in a future release. Use the End event instead.
-     */
-    // TODO: Remove this in a future release
-    // eslint-disable-next-line deprecation/deprecation
-    [StreamEvents.Close]: [];
     /**
      * Fired when the underlying Duplex triggers the 'end' event.
      */
@@ -104,10 +93,7 @@ export default class Stream extends Emitter<StreamEventArguments> {
             this._feed(data);
         });
         this._socket.on("end", () => {
-            log("forwarding close");
-            // TODO: Remove this in a future release
-            // eslint-disable-next-line deprecation/deprecation
-            this.emit(StreamEvents.Close);
+            log("forwarding end");
             this.emit(StreamEvents.End);
         });
     }

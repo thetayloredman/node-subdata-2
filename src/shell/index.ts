@@ -30,25 +30,11 @@ export enum ShellEvents {
     Packet = "packet",
     /** Fired after a Read Reset */
     Reset = "reset",
-    /**
-     * Fired when the underlying {@link Stream} closes
-     * @deprecated The Close event is deprecated and will be removed in a future release. Use the End event instead.
-     */
-    // TODO: Remove this in a future release
-    // eslint-disable-next-line deprecation/deprecation
-    Close = "close",
     End = "end"
 }
 export type ShellEventArguments = {
     [ShellEvents.Packet]: [Buffer];
     [ShellEvents.Reset]: [];
-    /**
-     * Fired when the underlying {@link Stream} closes
-     * @deprecated The Close event is deprecated and will be removed in a future release. Use the End event instead.
-     */
-    // TODO: Remove this in a future release
-    // eslint-disable-next-line deprecation/deprecation
-    [ShellEvents.Close]: [];
     [ShellEvents.End]: [];
 };
 
@@ -66,10 +52,7 @@ export default class Shell extends Emitter<ShellEventArguments> {
         this._algorithm = algorithm;
         this._stream = stream;
         this._stream.on(StreamEvents.End, () => {
-            log("forwarding close");
-            // TODO: Remove this in a future release
-            // eslint-disable-next-line deprecation/deprecation
-            this.emit(ShellEvents.Close);
+            log("forwarding end");
             this.emit(ShellEvents.End);
         });
         this._stream.on(StreamEvents.Packet, (packet) => {
