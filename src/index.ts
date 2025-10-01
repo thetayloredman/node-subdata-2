@@ -21,12 +21,14 @@ import DumbClient, { DumbClientEventArguments, DumbClientEvents } from "./DumbCl
 import { bytes, kb, mb } from "./lib/sizeHelpers.js";
 import Packet from "./Packet";
 import Shell, { ShellEventArguments, ShellEvents } from "./shell/";
+import AESShellAlgorithm from "./shell/algorithms/AES.js";
 import RawShellAlgorithm from "./shell/algorithms/Raw.js";
 import ShellAlgorithm from "./shell/algorithms/ShellAlgorithm.js";
 import Stream, { StreamEventArguments, StreamEvents } from "./stream/";
 import { ControlCharacters, SizedControlCharacters } from "./stream/controlCharacters.js";
 
 export {
+    AESShellAlgorithm,
     bytes,
     ControlCharacters,
     DumbClient,
